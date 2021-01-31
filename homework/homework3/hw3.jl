@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.14
+# v0.12.6
 
 using Markdown
 using InteractiveUtils
@@ -85,7 +85,7 @@ String(rand(Char, 40))
 
 # ╔═╡ f457ad44-f990-11ea-0e2d-2bb7627716a8
 md"""
-Instead, let's define an _alphabet_, and only use those letters to sample from. To keep things simple, we ignore punctuation, capitalization, etc, and only use these 27 characters:
+Instead, let's define an _alphabet_, and only use those letters to sample from. To keep things simple, we ignore punctuation, capitalization, etc, and only use these 27 characters: (26 English letters plus white space)
 """
 
 # ╔═╡ 4efc051e-f92e-11ea-080e-bde6b8f9295a
@@ -149,7 +149,7 @@ md"👉 Use `filter` to extract just the characters from our alphabet out of `me
 messy_sentence_1 = "#wow 2020 ¥500 (blingbling!)"
 
 # ╔═╡ 75694166-f998-11ea-0428-c96e1113e2a0
-cleaned_sentence_1 = missing
+cleaned_sentence_1 = filter(isinalphabet, messy_sentence_1)
 
 # ╔═╡ 05f0182c-f999-11ea-0a52-3d46c65a049e
 md"""
@@ -165,7 +165,7 @@ md"👉 Use the function `lowercase` to convert `messy_sentence_2` into a lower 
 messy_sentence_2 = "Awesome! 😍"
 
 # ╔═╡ d3a4820e-f998-11ea-2a5c-1f37e2a6dd0a
-cleaned_sentence_2 = missing
+cleaned_sentence_2 = filter(isinalphabet, lowercase(messy_sentence_2))
 
 # ╔═╡ aad659b8-f998-11ea-153e-3dae9514bfeb
 md"""
@@ -203,6 +203,12 @@ Los bosques pueden hallarse en todas las regiones capaces de mantener el crecimi
 # ╔═╡ a56724b6-f9a0-11ea-18f2-991e0382eccf
 unaccent(french_word)
 
+# ╔═╡ 2ba47912-63e5-11eb-3de1-cdc44fc3644b
+md"**(?)** Will uppercased accented letters still be uppercased after being `unaccent`ed?"
+
+# ╔═╡ 15f86e34-63e5-11eb-0b8c-3b8458efbf01
+unaccent("À Ú Ễ")
+
 # ╔═╡ 8d3bc9ea-f9a1-11ea-1508-8da4b7674629
 md"""
 $(html"<br>")
@@ -216,11 +222,16 @@ $(html"<br>")
 # ╔═╡ 4affa858-f92e-11ea-3ece-258897c37e51
 function clean(text)
 	# we turn everything to lowercase to keep the number of letters small
-	missing
+	filter(isinalphabet, lowercase(unaccent(text)))
 end
 
 # ╔═╡ e00d521a-f992-11ea-11e0-e9da8255b23b
 clean("Crème brûlée est mon plat préféré.")
+
+# ╔═╡ a90c8aaa-63e4-11eb-0fcb-c10264c4a1c2
+md"""
+#### Stopped (2021/01/31 (日) 23h51)
+"""
 
 # ╔═╡ 2680b506-f9a3-11ea-0849-3989de27dd9f
 first_sample = clean(first(samples))
@@ -1132,7 +1143,7 @@ bigbreak
 
 # ╔═╡ Cell order:
 # ╟─e6b6760a-f37f-11ea-3ae1-65443ef5a81a
-# ╟─ec66314e-f37f-11ea-0af4-31da0584e881
+# ╠═ec66314e-f37f-11ea-0af4-31da0584e881
 # ╟─85cfbd10-f384-11ea-31dc-b5693630a4c5
 # ╠═33e43c7c-f381-11ea-3abc-c942327456b1
 # ╟─938185ec-f384-11ea-21dc-b56b7469f798
@@ -1142,7 +1153,7 @@ bigbreak
 # ╟─c086bd1e-f384-11ea-3b26-2da9e24360ca
 # ╟─6f9df800-f92d-11ea-2d49-c1aaabd2d012
 # ╠═b61722cc-f98f-11ea-22ae-d755f61f78c3
-# ╟─f457ad44-f990-11ea-0e2d-2bb7627716a8
+# ╠═f457ad44-f990-11ea-0e2d-2bb7627716a8
 # ╠═4efc051e-f92e-11ea-080e-bde6b8f9295a
 # ╟─38d1ace8-f991-11ea-0b5f-ed7bd08edde5
 # ╠═ddf272c8-f990-11ea-2135-7bf1a6dca0b7
@@ -1151,12 +1162,12 @@ bigbreak
 # ╟─a094e2ac-f92d-11ea-141a-3566552dd839
 # ╠═27c9a7f4-f996-11ea-1e46-19e3fc840ad9
 # ╟─f2a4edfa-f996-11ea-1a24-1ba78fd92233
-# ╟─5c74a052-f92e-11ea-2c5b-0f1a3a14e313
+# ╠═5c74a052-f92e-11ea-2c5b-0f1a3a14e313
 # ╠═dcc4156c-f997-11ea-3e6f-057cd080d9db
 # ╟─129fbcfe-f998-11ea-1c96-0fd3ccd2dcf8
 # ╠═3a5ee698-f998-11ea-0452-19b70ed11a1d
 # ╠═75694166-f998-11ea-0428-c96e1113e2a0
-# ╟─6fe693c8-f9a1-11ea-1983-f159131880e9
+# ╠═6fe693c8-f9a1-11ea-1983-f159131880e9
 # ╟─05f0182c-f999-11ea-0a52-3d46c65a049e
 # ╟─98266882-f998-11ea-3270-4339fb502bc7
 # ╠═d3c98450-f998-11ea-3caf-895183af926b
@@ -1165,12 +1176,15 @@ bigbreak
 # ╟─aad659b8-f998-11ea-153e-3dae9514bfeb
 # ╠═d236b51e-f997-11ea-0c55-abb11eb35f4d
 # ╠═a56724b6-f9a0-11ea-18f2-991e0382eccf
-# ╟─24860970-fc48-11ea-0009-cddee695772c
-# ╟─734851c6-f92d-11ea-130d-bf2a69e89255
+# ╠═24860970-fc48-11ea-0009-cddee695772c
+# ╠═734851c6-f92d-11ea-130d-bf2a69e89255
+# ╟─2ba47912-63e5-11eb-3de1-cdc44fc3644b
+# ╠═15f86e34-63e5-11eb-0b8c-3b8458efbf01
 # ╟─8d3bc9ea-f9a1-11ea-1508-8da4b7674629
 # ╠═4affa858-f92e-11ea-3ece-258897c37e51
 # ╠═e00d521a-f992-11ea-11e0-e9da8255b23b
 # ╟─ddfb1e1c-f9a1-11ea-3625-f1170272e96a
+# ╟─a90c8aaa-63e4-11eb-0fcb-c10264c4a1c2
 # ╟─eaa8c79e-f9a2-11ea-323f-8bb2bd36e11c
 # ╠═2680b506-f9a3-11ea-0849-3989de27dd9f
 # ╟─571d28d6-f960-11ea-1b2e-d5977ecbbb11
