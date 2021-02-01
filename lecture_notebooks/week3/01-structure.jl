@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.12
+# v0.12.6
 
 using Markdown
 using InteractiveUtils
@@ -35,10 +35,17 @@ using Statistics
 # ╔═╡ b0ba5b8c-f5d1-11ea-1304-3f0e47f935fe
 md"# What do data structures, machine learning and the singular-value decomposition have in common?"
 
-# ╔═╡ ffa95430-f5d1-11ea-3cb7-5bb8d8f13701
+# ╔═╡ 1ad00628-6454-11eb-1446-9d0ece2c29a0
 md"""Blurry Fons magic: Exploiting Structure!
 
-ADD A HINT BOX HERE WITH THE ANSWER "STRUCTURE" """
+ADD A HINT BOX HERE WITH THE ANSWER "STRUCTURE"
+"""
+
+# ╔═╡ d3059b82-6453-11eb-18e3-7bbcb0c6fe00
+hint(text) = Markdown.MD(Markdown.Admonition("hint", "Hint", [text]))
+
+# ╔═╡ ffa95430-f5d1-11ea-3cb7-5bb8d8f13701
+hint(md"STRUCTURE")
 
 # ╔═╡ 261c4df2-f5d2-11ea-2c72-7d4b09c46098
 md"One-hot vectors:  Numbers and images
@@ -527,7 +534,9 @@ end
 
 # ╔═╡ Cell order:
 # ╟─b0ba5b8c-f5d1-11ea-1304-3f0e47f935fe
+# ╟─1ad00628-6454-11eb-1446-9d0ece2c29a0
 # ╟─ffa95430-f5d1-11ea-3cb7-5bb8d8f13701
+# ╟─d3059b82-6453-11eb-18e3-7bbcb0c6fe00
 # ╟─261c4df2-f5d2-11ea-2c72-7d4b09c46098
 # ╠═ae24c8b2-f60b-11ea-2c7a-03857d1217b2
 # ╠═b5177f70-f60b-11ea-14a9-f5a574cc5185

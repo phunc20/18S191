@@ -243,6 +243,30 @@ function letter_frequencies(txt)
 	f ./ sum(f)
 end
 
+# ╔═╡ e42fae06-6445-11eb-1acc-9705932dd3a8
+md"""
+Note that
+- `string(alphabet)`
+- `string.(alphabet)`
+- `String(alphabet)`
+give three diff results.
+"""
+
+# ╔═╡ caf4ac86-6448-11eb-2e40-f16db03ae51e
+count("a", "a apple a day keeps the doctors away.")
+
+# ╔═╡ 1b5ea0f0-6449-11eb-390c-1d24d7c3cde0
+count("p", "a apple a day keeps the doctors away.")
+
+# ╔═╡ 05e07a96-6449-11eb-1c64-8392e340dd01
+count("app", "a apple a day keeps the doctors away.")
+
+# ╔═╡ 3e830222-6449-11eb-3d04-e9c23aaf0775
+count.(["day", "a"], "a apple a day keeps the doctors away.")
+
+# ╔═╡ 54aa58b0-6449-11eb-195e-2fc0e042fe82
+count.(["day", "a"], ["a apple a day keeps the doctors away.", "Handsome is as handsome does."])
+
 # ╔═╡ 6a64ab12-f960-11ea-0d92-5b88943cdb1a
 sample_freqs = letter_frequencies(first_sample)
 
@@ -259,8 +283,36 @@ To make it easier to convert between a character from the alphabet and its index
 # ╔═╡ b3de6260-f9a4-11ea-1bae-9153a92c3fe5
 index_of_letter(letter) = findfirst(isequal(letter), alphabet)
 
+# ╔═╡ de8d5968-6449-11eb-3fc0-ef88c175eebc
+md"**(?)** Can we implement `index_of_letter()` the C way?"
+
+# ╔═╡ b1e967f8-6449-11eb-2e43-75b351b938c8
+'z' - 'a'
+
+# ╔═╡ 6dcc73a2-644a-11eb-2262-55a578dbe3d3
+typeof(index_of_letter('6'))
+
+# ╔═╡ eec19e0c-6449-11eb-2af8-7b0cfa7ef5bd
+md"""
+**(R)** Yes, we can implement it the C way. For example, like follows
+"""
+
+# ╔═╡ 0afc3c98-6450-11eb-304a-413a8b351816
+iol(letter) = let
+    if letter ∉ alphabet
+        return Nothing
+    elseif letter == ' '
+        return 27
+    else
+        return letter - 'a' + 1
+    end
+end
+
 # ╔═╡ a6c36bd6-f9a4-11ea-1aba-f75cecc90320
 index_of_letter('a'), index_of_letter('b'), index_of_letter(' ')
+
+# ╔═╡ 276fd254-6450-11eb-0b55-99ca5bdbd2bd
+iol('a'), iol('b'), iol(' ')
 
 # ╔═╡ 6d3f9dae-f9a5-11ea-3228-d147435e266d
 md"""
@@ -269,10 +321,25 @@ $(html"<br>")
 👉 Which letters from the alphabet did not occur in the sample?
 """
 
+# ╔═╡ bb5f3972-6451-11eb-1a17-573ca56b2be9
+[ i for (i, freq) in enumerate(sample_freqs) if freq == 0]
+
+# ╔═╡ 93f1c5c0-6452-11eb-092f-63cc1071ddd5
+alphabet[[ i for (i, freq) in enumerate(sample_freqs) if freq == 0]]
+
 # ╔═╡ 92bf9fd2-f9a5-11ea-25c7-5966e44db6c6
 unused_letters = let
-	['a', 'b']
+	alphabet[[ i for (i, freq) in enumerate(sample_freqs) if freq == 0]]
 end
+
+# ╔═╡ c39b2870-6452-11eb-1065-11adfbe39d91
+md"**(?)** What does the hint mean by _without writing any code_? Or it simply means that it is fine if we just do as follows?
+```julia
+unused_letters = let
+	['j', 'q', 'z']
+end
+```
+It'd be boring if that's the case." 
 
 # ╔═╡ 01215e9a-f9a9-11ea-363b-67392741c8d4
 md"""
@@ -283,11 +350,13 @@ md"""
 md"""
 By considering the _frequencies_ of letters in English, we see that our model is already a lot better!
 
-Our next observation is that **some letter _combinations_ are more common than others**. Our current model thinks that `potato` is just as 'English' as `ooaptt`. In the next section, we will quantify these _transition frequencies_, and use it to improve our model.
+Our next observation is that **some letter _combinations_ are more common than others**. Our current model thinks that `potato` is just as 'English' as `ooaptt`. (Mathematically, this means that, if the occurrence of letters are independent, then `potato` is equally likely to occur as `ooaptt`.) In the next section, we will quantify these _transition frequencies_, and use it to improve our model.
 """
 
-# ╔═╡ 343d63c2-fb58-11ea-0cce-efe1afe070c2
-
+# ╔═╡ ee226788-6455-11eb-0eec-31b566bacb12
+md"""
+**(?)** Study the following two functions and recall how you would do them in Python.
+"""
 
 # ╔═╡ b5b8dd18-f938-11ea-157b-53b145357fd1
 function rand_sample(frequencies)
@@ -1187,23 +1256,38 @@ bigbreak
 # ╟─a90c8aaa-63e4-11eb-0fcb-c10264c4a1c2
 # ╟─eaa8c79e-f9a2-11ea-323f-8bb2bd36e11c
 # ╠═2680b506-f9a3-11ea-0849-3989de27dd9f
-# ╟─571d28d6-f960-11ea-1b2e-d5977ecbbb11
+# ╠═571d28d6-f960-11ea-1b2e-d5977ecbbb11
+# ╟─e42fae06-6445-11eb-1acc-9705932dd3a8
+# ╠═caf4ac86-6448-11eb-2e40-f16db03ae51e
+# ╠═1b5ea0f0-6449-11eb-390c-1d24d7c3cde0
+# ╠═05e07a96-6449-11eb-1c64-8392e340dd01
+# ╠═3e830222-6449-11eb-3d04-e9c23aaf0775
+# ╠═54aa58b0-6449-11eb-195e-2fc0e042fe82
 # ╠═6a64ab12-f960-11ea-0d92-5b88943cdb1a
 # ╟─603741c2-f9a4-11ea-37ce-1b36ecc83f45
-# ╟─b3de6260-f9a4-11ea-1bae-9153a92c3fe5
+# ╠═b3de6260-f9a4-11ea-1bae-9153a92c3fe5
+# ╟─de8d5968-6449-11eb-3fc0-ef88c175eebc
+# ╠═b1e967f8-6449-11eb-2e43-75b351b938c8
+# ╠═6dcc73a2-644a-11eb-2262-55a578dbe3d3
+# ╟─eec19e0c-6449-11eb-2af8-7b0cfa7ef5bd
+# ╠═0afc3c98-6450-11eb-304a-413a8b351816
 # ╠═a6c36bd6-f9a4-11ea-1aba-f75cecc90320
+# ╠═276fd254-6450-11eb-0b55-99ca5bdbd2bd
 # ╟─6d3f9dae-f9a5-11ea-3228-d147435e266d
+# ╠═bb5f3972-6451-11eb-1a17-573ca56b2be9
+# ╠═93f1c5c0-6452-11eb-092f-63cc1071ddd5
 # ╠═92bf9fd2-f9a5-11ea-25c7-5966e44db6c6
-# ╟─95b81778-f9a5-11ea-3f51-019430bc8fa8
-# ╟─7df7ab82-f9ad-11ea-2243-21685d660d71
+# ╠═95b81778-f9a5-11ea-3f51-019430bc8fa8
+# ╠═7df7ab82-f9ad-11ea-2243-21685d660d71
+# ╟─c39b2870-6452-11eb-1065-11adfbe39d91
 # ╟─dcffd7d2-f9a6-11ea-2230-b1afaecfdd54
 # ╟─b3dad856-f9a7-11ea-1552-f7435f1cb605
 # ╟─01215e9a-f9a9-11ea-363b-67392741c8d4
-# ╟─be55507c-f9a7-11ea-189c-4ffe8377212e
+# ╠═be55507c-f9a7-11ea-189c-4ffe8377212e
 # ╟─8ae13cf0-f9a8-11ea-3919-a735c4ed9e7f
-# ╟─343d63c2-fb58-11ea-0cce-efe1afe070c2
-# ╟─b5b8dd18-f938-11ea-157b-53b145357fd1
-# ╟─0e872a6c-f937-11ea-125e-37958713a495
+# ╟─ee226788-6455-11eb-0eec-31b566bacb12
+# ╠═b5b8dd18-f938-11ea-157b-53b145357fd1
+# ╠═0e872a6c-f937-11ea-125e-37958713a495
 # ╟─77623f3e-f9a9-11ea-2f46-ff07bd27cd5f
 # ╠═fbb7c04e-f92d-11ea-0b81-0be20da242c8
 # ╠═80118bf8-f931-11ea-34f3-b7828113ffd8
