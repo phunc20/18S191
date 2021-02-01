@@ -360,7 +360,12 @@ md"""
 
 # ╔═╡ b5b8dd18-f938-11ea-157b-53b145357fd1
 function rand_sample(frequencies)
-	x = rand()
+	x = rand()  # x ∈ [0,1)
+	#= 
+	Actually, if sum(frequencies) == 1, then the step
+	  frequencies ./ sum(frequencies)
+	is redundant.
+	=#
 	findfirst(z -> z >= x, cumsum(frequencies ./ sum(frequencies)))
 end
 
@@ -368,6 +373,37 @@ end
 function rand_sample_letter(frequencies)
 	alphabet[rand_sample(frequencies)]
 end
+
+# ╔═╡ 8a16baee-645a-11eb-0d36-7b6a04abd4d0
+cumsum([1,2,3,4])
+
+# ╔═╡ f807fed0-645a-11eb-243c-217a37bf9bbc
+cumsum([0.25 for _ in 1:4])
+
+# ╔═╡ c414d6ae-645a-11eb-36a5-cb3b67c3725c
+[findfirst(z -> z >= rand(), cumsum([0.25 for _ in 1:4])) for _ in 1:20]
+
+# ╔═╡ 77edb54a-6462-11eb-0c70-17551e107ed7
+md"""
+**(R)**$(html"<br>")
+After reading `rand_sample()`, I find it well implemented.
+
+Say, we have a finite set of probability values $p_1, p_2, \ldots, p_n$ storing in the array `frequencies` and summing up to $\sum_{i=1}^{n} p_i = 1.$
+Then `findfirst(z -> z >= x, cumsum(frequencies ./ sum(frequencies)))` will find the
+smallest $k$ such that $\sum_{i=1}^{k} p_i \ge$ `x`. Note that `findfirst(z -> z >= x, cumsum(frequencies ./ sum(frequencies)))` $= k\;$ if and only if
+- `x` $\le \sum_{i=1}^{k} p_i$
+- `x` $> \sum_{i=1}^{k-1} p_i\,.$
+Note also that
+- since `x` is a uniform random variable in $[0,1)$, we know that, for all $p \in [0,1]$, the probability that `x` $\le p$ equals $p\,.$ 
+Thus, the probability `findfirst(z -> z >= x, cumsum(frequencies ./ sum(frequencies)))` $= k$ equals
+$P\big($`x`$\le \sum_{i=1}^{k} p_i \quad\text{and}\;$ `x` $> \sum_{i=1}^{k-1} p_i\big) = P\big($`x`$\le \sum_{i=1}^{k} p_i\big) - P\big($`x`$\le \sum_{i=1}^{k-1} p_i\big) = p_k\,.$
+
+"""
+
+# ╔═╡ 56ad9938-646f-11eb-138e-f74a49020de3
+md"""
+#### Stopped (2021/02/01 (月) 16h30)
+"""
 
 # ╔═╡ fbb7c04e-f92d-11ea-0b81-0be20da242c8
 function transition_counts(cleaned_sample)
@@ -1288,6 +1324,11 @@ bigbreak
 # ╟─ee226788-6455-11eb-0eec-31b566bacb12
 # ╠═b5b8dd18-f938-11ea-157b-53b145357fd1
 # ╠═0e872a6c-f937-11ea-125e-37958713a495
+# ╠═8a16baee-645a-11eb-0d36-7b6a04abd4d0
+# ╠═f807fed0-645a-11eb-243c-217a37bf9bbc
+# ╠═c414d6ae-645a-11eb-36a5-cb3b67c3725c
+# ╟─77edb54a-6462-11eb-0c70-17551e107ed7
+# ╟─56ad9938-646f-11eb-138e-f74a49020de3
 # ╟─77623f3e-f9a9-11ea-2f46-ff07bd27cd5f
 # ╠═fbb7c04e-f92d-11ea-0b81-0be20da242c8
 # ╠═80118bf8-f931-11ea-34f3-b7828113ffd8
