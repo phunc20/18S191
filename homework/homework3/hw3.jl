@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.6
+# v0.12.20
 
 using Markdown
 using InteractiveUtils
@@ -398,6 +398,52 @@ Note also that
 Thus, the probability `findfirst(z -> z >= x, cumsum(frequencies ./ sum(frequencies)))` $= k$ equals
 $P\big($`x`$\le \sum_{i=1}^{k} p_i \quad\text{and}\;$ `x` $> \sum_{i=1}^{k-1} p_i\big) = P\big($`x`$\le \sum_{i=1}^{k} p_i\big) - P\big($`x`$\le \sum_{i=1}^{k-1} p_i\big) = p_k\,.$
 
+"""
+
+# ╔═╡ d41bfe0c-6477-11eb-0b84-67ff92cdcdb5
+md"""
+In the past, when we do this in Python, more specifically in `numpy`, we would use the `np.random.choice()` function to write
+```python
+def rand_sample_letter(frequencies):
+    return np.random.choice(alphabet, p=frequencies)
+```
+But don't think that this is superior, because if we look inside the source code of `numpy` (in `numpy`'s github page, file `numpy/numpy/random/_generator.pyx`)
+
+In case someone curious how I located this file:
+```bash
+~/.../numpy-master/numpy/random ❯❯❯ grep -Rn "def choice"
+_generator.pyx:598:    def choice(self, a, size=None, replace=True, p=None, axis=0, bint shuffle=True):
+mtrand.pyx:806:    def choice(self, a, size=None, replace=True, p=None):
+~/.../numpy-master/numpy/random ❯❯❯
+```
+
+The following lines are of particular interest.
+```python
+...
+if replace:
+    if p is not None:
+        cdf = p.cumsum()
+        cdf /= cdf[-1]
+        uniform_samples = self.random(shape)
+        idx = cdf.searchsorted(uniform_samples, side='right')
+        # searchsorted returns a scalar
+        idx = np.array(idx, copy=False, dtype=np.int64)
+    else:
+        idx = self.integers(0, pop_size, size=shape, dtype=np.int64)
+else:
+    if size > pop_size:
+        raise ValueError("Cannot take a larger sample than "
+                         "population when replace is False")
+    elif size < 0:
+        raise ValueError("negative dimensions are not allowed")
+                                                                      
+    if p is not None:
+        if np.count_nonzero(p > 0) < size:
+            raise ValueError("Fewer non-zero entries in p than size")
+...
+```
+By the look of it, we can kind of see that in essence `numpy` is probably using **the
+same technique** to sample a probability distribution **as the Julia code above**.
 """
 
 # ╔═╡ 56ad9938-646f-11eb-138e-f74a49020de3
@@ -1263,7 +1309,7 @@ bigbreak
 # ╟─38d1ace8-f991-11ea-0b5f-ed7bd08edde5
 # ╠═ddf272c8-f990-11ea-2135-7bf1a6dca0b7
 # ╟─3cc688d2-f996-11ea-2a6f-0b4c7a5b74c2
-# ╟─d67034d0-f92d-11ea-31c2-f7a38ebb412f
+# ╠═d67034d0-f92d-11ea-31c2-f7a38ebb412f
 # ╟─a094e2ac-f92d-11ea-141a-3566552dd839
 # ╠═27c9a7f4-f996-11ea-1e46-19e3fc840ad9
 # ╟─f2a4edfa-f996-11ea-1a24-1ba78fd92233
@@ -1328,6 +1374,7 @@ bigbreak
 # ╠═f807fed0-645a-11eb-243c-217a37bf9bbc
 # ╠═c414d6ae-645a-11eb-36a5-cb3b67c3725c
 # ╟─77edb54a-6462-11eb-0c70-17551e107ed7
+# ╟─d41bfe0c-6477-11eb-0b84-67ff92cdcdb5
 # ╟─56ad9938-646f-11eb-138e-f74a49020de3
 # ╟─77623f3e-f9a9-11ea-2f46-ff07bd27cd5f
 # ╠═fbb7c04e-f92d-11ea-0b81-0be20da242c8
