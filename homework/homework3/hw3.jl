@@ -383,6 +383,11 @@ cumsum([0.25 for _ in 1:4])
 # ╔═╡ c414d6ae-645a-11eb-36a5-cb3b67c3725c
 [findfirst(z -> z >= rand(), cumsum([0.25 for _ in 1:4])) for _ in 1:20]
 
+# ╔═╡ dbc446ec-6494-11eb-1948-4556a11e203e
+md"""
+#### Stopped (2021/02/01 (月) 16h30)
+"""
+
 # ╔═╡ 77edb54a-6462-11eb-0c70-17551e107ed7
 md"""
 **(R)**$(html"<br>")
@@ -444,11 +449,12 @@ else:
 ```
 By the look of it, we can kind of see that in essence `numpy` is probably using **the
 same technique** to sample a probability distribution **as the Julia code above**.
+(cf. `./hw3.ipynb` if interested in the same exercises done in Python.)
 """
 
 # ╔═╡ 56ad9938-646f-11eb-138e-f74a49020de3
 md"""
-#### Stopped (2021/02/01 (月) 16h30)
+#### Stopped (2021/02/01 (月) 20h50)
 """
 
 # ╔═╡ fbb7c04e-f92d-11ea-0b81-0be20da242c8
@@ -1373,6 +1379,7 @@ bigbreak
 # ╠═8a16baee-645a-11eb-0d36-7b6a04abd4d0
 # ╠═f807fed0-645a-11eb-243c-217a37bf9bbc
 # ╠═c414d6ae-645a-11eb-36a5-cb3b67c3725c
+# ╟─dbc446ec-6494-11eb-1948-4556a11e203e
 # ╟─77edb54a-6462-11eb-0c70-17551e107ed7
 # ╟─d41bfe0c-6477-11eb-0b84-67ff92cdcdb5
 # ╟─56ad9938-646f-11eb-138e-f74a49020de3
