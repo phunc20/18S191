@@ -52,7 +52,7 @@ Feel free to ask questions!
 # ╔═╡ 33e43c7c-f381-11ea-3abc-c942327456b1
 # edit the code below to set your name and kerberos ID (i.e. email without @mit.edu)
 
-student = (name = "Jazzy Doe", kerberos_id = "jazz")
+student = (name = "phunc20", kerberos_id = "reggae")
 
 # you might need to wait until all other cells in this notebook have completed running. 
 # scroll around the page to see what's up
@@ -260,6 +260,35 @@ count("p", "a apple a day keeps the doctors away.")
 
 # ╔═╡ 05e07a96-6449-11eb-1c64-8392e340dd01
 count("app", "a apple a day keeps the doctors away.")
+
+# ╔═╡ 668902a4-6af8-11eb-074c-7986509edb52
+count("a ", "a apple a day keeps the doctors away.")
+
+# ╔═╡ dd1fc952-6af8-11eb-232d-eb8bc688cbf2
+count("PP", "PPP", overlap=true)
+
+# ╔═╡ 1cbe4598-6af9-11eb-33f3-d92a4e9e9365
+count("PP", "PPP", overlap=false)
+
+# ╔═╡ 88d772dc-6af8-11eb-1241-0f69214f9cd7
+typeof("c")
+
+# ╔═╡ 8dd89f70-6af8-11eb-2a3d-9f7f67ff8131
+typeof('c')
+
+# ╔═╡ 81acdbde-6af8-11eb-1c54-737cae7daa19
+md"""
+```
+MethodError: objects of type Char are not callable
+
+  1. _simple_count(::Char, ::String)@reduce.jl:869
+  2. count@reduce.jl:864[inlined]
+  3. top-level scope@Local: 1[inlined]
+```
+```julia
+count('c', "a apple a day keeps the doctors away.")
+```
+"""
 
 # ╔═╡ 3e830222-6449-11eb-3d04-e9c23aaf0775
 count.(["day", "a"], "a apple a day keeps the doctors away.")
@@ -473,6 +502,9 @@ transition_frequencies = normalize_array ∘ transition_counts;
 # ╔═╡ d40034f6-f9ab-11ea-3f65-7ffd1256ae9d
 transition_frequencies(first_sample)
 
+# ╔═╡ e602f9da-6aef-11eb-106a-6394abbcd72a
+sum(transition_frequencies(first_sample))
+
 # ╔═╡ 689ed82a-f9ae-11ea-159c-331ff6660a75
 md"What we get is a **27 by 27 matrix**. Each entry corresponds to a character pair. The _row_ corresponds to the first character, the _column_ is the second character. Let's visualize this:"
 
@@ -495,14 +527,26 @@ end
 # ╔═╡ e91c6fd8-f930-11ea-01ac-476bbde79079
 md"""👉 What is the frequency of the combination `"th"`?"""
 
+# ╔═╡ da990002-6af7-11eb-185b-1db6d1549445
+"th"[1]
+
+# ╔═╡ 2d9deb94-6af8-11eb-2ae7-a1f0ed9afedc
+typeof("th"[1])
+
+# ╔═╡ 33baea36-6af8-11eb-0f78-515714025515
+'t' - 'a'
+
+# ╔═╡ 42afd1e6-6af8-11eb-3993-bda68667bf81
+index_of_letter('t')
+
 # ╔═╡ 1b4c0c28-f9ab-11ea-03a6-69f69f7f90ed
-th_frequency = missing
+th_frequency = sample_freq_matrix[index_of_letter('t'), index_of_letter('h')]
 
 # ╔═╡ 1f94e0a2-f9ab-11ea-1347-7dd906ebb09d
 md"""👉 What about `"ht"`?"""
 
 # ╔═╡ 41b2df7c-f931-11ea-112e-ede3b16f357a
-ht_frequency = missing
+ht_frequency = sample_freq_matrix[index_of_letter('h'), index_of_letter('t')]
 
 # ╔═╡ 1dd1e2f4-f930-11ea-312c-5ff9e109c7f6
 md"""
@@ -510,19 +554,31 @@ md"""
 """
 
 # ╔═╡ 65c92cac-f930-11ea-20b1-6b8f45b3f262
-double_letters = ['x', 'y']
+double_letters = [ c for c in alphabet if sample_freq_matrix[index_of_letter(c), index_of_letter(c)] > 0 ]
+
+# ╔═╡ 71eb6f22-6afa-11eb-3ed1-55c553f415a0
+sample_freq_matrix[1,:]
+
+# ╔═╡ 877c36dc-6afa-11eb-1577-fd62528f196b
+length(sample_freq_matrix[1,:])
+
+# ╔═╡ 5aa988d0-6afa-11eb-01ad-03abb28bf5a8
+argmax(sample_freq_matrix[1,:])
 
 # ╔═╡ 4582ebf4-f930-11ea-03b2-bf4da1a8f8df
 md"""
-👉 Which letter is most likely to follow a **W**?
+👉 Which letter is most likely to follow a **w**?
 """
 
 # ╔═╡ 7898b76a-f930-11ea-2b7e-8126ec2b8ffd
-most_likely_to_follow_w = 'x'
+most_likely_to_follow_w = alphabet[argmax(sample_freq_matrix[index_of_letter('w'),:])]
+
+# ╔═╡ db7a05a2-6afa-11eb-0c0a-bf2bb3911f62
+sample_freq_matrix[index_of_letter('w'),:]
 
 # ╔═╡ 458cd100-f930-11ea-24b8-41a49f6596a0
 md"""
-👉 Which letter is most likely to precede a **W**?
+👉 Which letter is most likely to precede a **w**?
 """
 
 # ╔═╡ bc401bee-f931-11ea-09cc-c5efe2f11194
@@ -1349,6 +1405,12 @@ bigbreak
 # ╠═caf4ac86-6448-11eb-2e40-f16db03ae51e
 # ╠═1b5ea0f0-6449-11eb-390c-1d24d7c3cde0
 # ╠═05e07a96-6449-11eb-1c64-8392e340dd01
+# ╠═668902a4-6af8-11eb-074c-7986509edb52
+# ╠═dd1fc952-6af8-11eb-232d-eb8bc688cbf2
+# ╠═1cbe4598-6af9-11eb-33f3-d92a4e9e9365
+# ╠═88d772dc-6af8-11eb-1241-0f69214f9cd7
+# ╠═8dd89f70-6af8-11eb-2a3d-9f7f67ff8131
+# ╟─81acdbde-6af8-11eb-1c54-737cae7daa19
 # ╠═3e830222-6449-11eb-3d04-e9c23aaf0775
 # ╠═54aa58b0-6449-11eb-195e-2fc0e042fe82
 # ╠═6a64ab12-f960-11ea-0d92-5b88943cdb1a
@@ -1388,12 +1450,17 @@ bigbreak
 # ╠═80118bf8-f931-11ea-34f3-b7828113ffd8
 # ╠═7f4f6ce4-f931-11ea-15a4-b3bec6a7e8b6
 # ╠═d40034f6-f9ab-11ea-3f65-7ffd1256ae9d
+# ╠═e602f9da-6aef-11eb-106a-6394abbcd72a
 # ╟─689ed82a-f9ae-11ea-159c-331ff6660a75
 # ╠═ace3dc76-f9ae-11ea-2bee-3d0bfa57cfbc
 # ╟─0b67789c-f931-11ea-113c-35e5edafcbbf
 # ╠═6896fef8-f9af-11ea-0065-816a70ba9670
-# ╟─39152104-fc49-11ea-04dd-bb34e3600f2f
+# ╠═39152104-fc49-11ea-04dd-bb34e3600f2f
 # ╟─e91c6fd8-f930-11ea-01ac-476bbde79079
+# ╠═da990002-6af7-11eb-185b-1db6d1549445
+# ╠═2d9deb94-6af8-11eb-2ae7-a1f0ed9afedc
+# ╠═33baea36-6af8-11eb-0f78-515714025515
+# ╠═42afd1e6-6af8-11eb-3993-bda68667bf81
 # ╠═1b4c0c28-f9ab-11ea-03a6-69f69f7f90ed
 # ╟─1f94e0a2-f9ab-11ea-1347-7dd906ebb09d
 # ╠═41b2df7c-f931-11ea-112e-ede3b16f357a
@@ -1401,10 +1468,14 @@ bigbreak
 # ╟─1dd1e2f4-f930-11ea-312c-5ff9e109c7f6
 # ╠═65c92cac-f930-11ea-20b1-6b8f45b3f262
 # ╟─671525cc-f930-11ea-0e71-df9d4aae1c05
+# ╠═71eb6f22-6afa-11eb-3ed1-55c553f415a0
+# ╠═877c36dc-6afa-11eb-1577-fd62528f196b
+# ╠═5aa988d0-6afa-11eb-01ad-03abb28bf5a8
 # ╟─4582ebf4-f930-11ea-03b2-bf4da1a8f8df
-# ╟─7898b76a-f930-11ea-2b7e-8126ec2b8ffd
+# ╠═7898b76a-f930-11ea-2b7e-8126ec2b8ffd
+# ╠═db7a05a2-6afa-11eb-0c0a-bf2bb3911f62
 # ╟─a5fbba46-f931-11ea-33e1-054be53d986c
-# ╟─458cd100-f930-11ea-24b8-41a49f6596a0
+# ╠═458cd100-f930-11ea-24b8-41a49f6596a0
 # ╠═bc401bee-f931-11ea-09cc-c5efe2f11194
 # ╟─ba695f6a-f931-11ea-0fbb-c3ef1374270e
 # ╟─45c20988-f930-11ea-1d12-b782d2c01c11
