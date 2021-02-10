@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.3
+# v0.12.20
 
 using Markdown
 using InteractiveUtils
@@ -78,7 +78,7 @@ Feel free to ask questions!
 # ╔═╡ 1f299cc6-0970-11eb-195b-3f951f92ceeb
 # edit the code below to set your name and kerberos ID (i.e. email without @mit.edu)
 
-student = (name = "Jazzy Doe", kerberos_id = "jazz")
+student = (name = "phunc20", kerberos_id = "reggae")
 
 # you might need to wait until all other cells in this notebook have completed running. 
 # scroll around the page to see what's up

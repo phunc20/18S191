@@ -582,7 +582,13 @@ md"""
 """
 
 # ╔═╡ bc401bee-f931-11ea-09cc-c5efe2f11194
-most_likely_to_precede_w = 'x'
+most_likely_to_precede_w = alphabet[argmax(sample_freq_matrix[:,index_of_letter('w')])]
+
+# ╔═╡ f7ae6e30-6b5d-11eb-2bb7-75fa4af2bfc5
+maximum(sample_freq_matrix[:,index_of_letter('w')])
+
+# ╔═╡ fbb2fa9e-6b5d-11eb-0933-7b56a24a99d5
+sort(sample_freq_matrix[:,index_of_letter('w')], rev=true)
 
 # ╔═╡ 45c20988-f930-11ea-1d12-b782d2c01c11
 md"""
@@ -591,7 +597,16 @@ md"""
 
 # ╔═╡ cc62929e-f9af-11ea-06b9-439ac08dcb52
 row_col_answer = md"""
+- sum of each row: Say, the row of `w`, is the frequency of `wα` appearing in the sampling text, where `α` can be any letter in `alphabet`
+  - If we were to randomly sample two letters from the frequency model of the sampling text, then this sum is the probability of us sampling letters of the form `wα`
+- sum of each column: Say, the column of `w`, is the frequency of `αw` appearing in the sampling text, where `α` can be any letter in `alphabet`
+  - If we were to randomly sample two letters from the frequency model of the sampling text, then this sum is the probability of us sampling letters of the form `αw`
 
+"""
+
+# ╔═╡ ae7f0ca2-6b6b-11eb-338d-a73f7f0d5343
+md"""
+#### Stopped (2021/02/10 (水) 13h47)
 """
 
 # ╔═╡ 2f8dedfc-fb98-11ea-23d7-2159bdb6a299
@@ -619,8 +634,8 @@ md"""
 
 # ╔═╡ 0e465160-f937-11ea-0ebb-b7e02d71e8a8
 function sample_text(A, n)
-	
 	first_index = rand_sample(vec(sum(A, dims=1)))
+	# Here I don't think dims=2 or dims=1 makes much difference
 	
 	indices = reduce(1:n; init=[first_index]) do word, _
 		prev = last(word)
@@ -631,6 +646,97 @@ function sample_text(A, n)
 	
 	String(alphabet[indices])
 end
+
+# ╔═╡ b8c50640-6b7e-11eb-3e0e-29d3bcd553d0
+md"""
+```julia
+julia> A = rand(Int8, (3,3))
+3×3 Array{Int8,2}:
+ 109   54  -121
+  69  110   -63
+  -7   72   -27
+
+julia> A                                                                                        [2/48]
+3×3 Array{Int8,2}:
+ 109   54  -121
+  69  110   -63
+  -7   72   -27
+
+julia> sum(A)
+196
+
+julia> sum(A, dims=1)
+1×3 Array{Int64,2}:
+ 171  236  -211
+
+julia> sum(A, dims=2)
+3×1 Array{Int64,2}:
+  42
+ 116
+  38
+
+julia> vec(sum(A, dims=2))
+3-element Array{Int64,1}:
+  42
+ 116
+  38
+
+julia> vec(sum(A, dims=1))
+3-element Array{Int64,1}:
+  171
+  236
+ -211
+```
+"""
+
+# ╔═╡ 885dfc98-6b8b-11eb-2a84-ff28288778f5
+md"""
+**(?)** Why after `do` there are two arguments `word, _`?
+"""
+
+# ╔═╡ 87a22e16-6b93-11eb-0e40-afcaefa4a3fb
+begin
+  sth, _ = [1,2,3,4]
+  md"sth = $(sth)"
+end
+
+# ╔═╡ a64d719e-6b94-11eb-2f0c-773663fc272e
+reduce(1:9; init=[3]) do a, b
+	print(a, b)
+	[a..., 1]
+end
+
+# ╔═╡ 4c819528-6b94-11eb-090b-19b97deb5391
+reduce(1:9; init=[3]) do a, b
+	[b..., 1]
+end
+
+# ╔═╡ b85d2000-6b94-11eb-2a79-d134eeebb5f3
+md"""
+**(R)**$(html"<br>")
+I seem to understand:
+```julia
+# Recall the syntax of reduce()
+reduce(op, itr; [init])
+
+reduce(itr; init=sth) do a, b
+  ...
+  [a..., qqch]
+end
+```
+During each iteration (in the `do ... end` block)
+- `a` represents the returned value at each iteration
+- `b` represents the new incoming element from `itr`
+
+So for example, in the function `sample_text()`, the second arg is `_` because, as we iterate,
+we don't really care the `k` coming from `1:n`; what we care is that we generate exactly
+`n` indices and each generation is based on the previous index following the `transition_frequencies()` of some given text.
+
+
+**Rmk.**
+- cf. [do-block syntax](https://docs.julialang.org/en/v1/manual/functions/#Do-Block-Syntax-for-Function-Arguments). Simply speaking, do-block is just a way to postpone the specification of the function involved (in `map()`, `reduce()`, etc.), in order to make things clearer.
+
+"""
 
 # ╔═╡ 141af892-f933-11ea-1e5f-154167642809
 md"""
@@ -1342,6 +1448,7 @@ To quantify this observation, we will do the same as in our last exercise: we co
 bigbreak
 
 # ╔═╡ 6718d26c-f9b0-11ea-1f5a-0f22f7ddffe9
+
 md"""
 $(bigbreak)
 
@@ -1477,23 +1584,32 @@ bigbreak
 # ╟─a5fbba46-f931-11ea-33e1-054be53d986c
 # ╠═458cd100-f930-11ea-24b8-41a49f6596a0
 # ╠═bc401bee-f931-11ea-09cc-c5efe2f11194
+# ╠═f7ae6e30-6b5d-11eb-2bb7-75fa4af2bfc5
+# ╠═fbb2fa9e-6b5d-11eb-0933-7b56a24a99d5
 # ╟─ba695f6a-f931-11ea-0fbb-c3ef1374270e
 # ╟─45c20988-f930-11ea-1d12-b782d2c01c11
-# ╠═cc62929e-f9af-11ea-06b9-439ac08dcb52
+# ╟─cc62929e-f9af-11ea-06b9-439ac08dcb52
+# ╟─ae7f0ca2-6b6b-11eb-338d-a73f7f0d5343
 # ╟─d3d7bd9c-f9af-11ea-1570-75856615eb5d
 # ╟─2f8dedfc-fb98-11ea-23d7-2159bdb6a299
 # ╟─b7446f34-f9b1-11ea-0f39-a3c17ba740e5
 # ╟─4f97b572-f9b0-11ea-0a99-87af0797bf28
-# ╟─46c905d8-f9b0-11ea-36ed-0515e8ed2621
+# ╠═46c905d8-f9b0-11ea-36ed-0515e8ed2621
 # ╟─4e8d327e-f9b0-11ea-3f16-c178d96d07d9
-# ╟─489b03d4-f9b0-11ea-1de0-11d4fe4e7c69
+# ╠═489b03d4-f9b0-11ea-1de0-11d4fe4e7c69
 # ╟─d83f8bbc-f9af-11ea-2392-c90e28e96c65
-# ╟─fd202410-f936-11ea-1ad6-b3629556b3e0
-# ╟─0e465160-f937-11ea-0ebb-b7e02d71e8a8
+# ╠═fd202410-f936-11ea-1ad6-b3629556b3e0
+# ╠═0e465160-f937-11ea-0ebb-b7e02d71e8a8
+# ╟─b8c50640-6b7e-11eb-3e0e-29d3bcd553d0
+# ╟─885dfc98-6b8b-11eb-2a84-ff28288778f5
+# ╠═87a22e16-6b93-11eb-0e40-afcaefa4a3fb
+# ╠═a64d719e-6b94-11eb-2f0c-773663fc272e
+# ╠═4c819528-6b94-11eb-090b-19b97deb5391
+# ╟─b85d2000-6b94-11eb-2a79-d134eeebb5f3
 # ╟─6718d26c-f9b0-11ea-1f5a-0f22f7ddffe9
 # ╟─141af892-f933-11ea-1e5f-154167642809
 # ╟─7eed9dde-f931-11ea-38b0-db6bfcc1b558
-# ╟─7e3282e2-f931-11ea-272f-d90779264456
+# ╠═7e3282e2-f931-11ea-272f-d90779264456
 # ╟─7d1439e6-f931-11ea-2dab-41c66a779262
 # ╠═7df55e6c-f931-11ea-33b8-fdc3be0b6cfa
 # ╟─292e0384-fb57-11ea-0238-0fbe416fc976
@@ -1502,7 +1618,7 @@ bigbreak
 # ╠═13c89272-f934-11ea-07fe-91b5d56dedf8
 # ╟─7d60f056-f931-11ea-39ae-5fa18a955a77
 # ╟─b09f5512-fb58-11ea-2527-31bea4cee823
-# ╟─8c7606f0-fb93-11ea-0c9c-45364892cbb8
+# ╠═8c7606f0-fb93-11ea-0c9c-45364892cbb8
 # ╟─568f0d3a-fb54-11ea-0f77-171718ef12a5
 # ╟─82e0df62-fb54-11ea-3fff-b16c87a7d45b
 # ╠═b7601048-fb57-11ea-0754-97dc4e0623a1
