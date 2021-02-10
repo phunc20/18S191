@@ -738,6 +738,11 @@ we don't really care the `k` coming from `1:n`; what we care is that we generate
 
 """
 
+# ╔═╡ 508f3efe-6b99-11eb-3e6a-93eacd378c96
+md"""
+**(?)** `ex23_sample`? Where is it defined?
+"""
+
 # ╔═╡ 141af892-f933-11ea-1e5f-154167642809
 md"""
 It looks like we have a decent language model, in the sense that it understands _transition frequencies_ in the language. In the demo above, try switching the language between $(join(string.(fieldnames(typeof(samples))), " and ")) -- the generated text clearly looks more like one or the other, demonstrating that the model can capture differences between the two languages. What's remarkable is that our "training data" was just a single paragraph per language.
@@ -780,9 +785,16 @@ The only question left is: How do we compare two matrices? When two matrices are
 3. Summing the differences
 """
 
+# ╔═╡ a71c5756-6b9a-11eb-0982-bfc4fb39d523
+(A = rand(Int8, (3,3))) - (B = rand(Int8, (3,3)))
+
+# ╔═╡ b04390f6-6b9a-11eb-0f39-0b4f9db680a7
+A .- B
+
 # ╔═╡ 13c89272-f934-11ea-07fe-91b5d56dedf8
 function matrix_distance(A, B)
-	missing # do something with A .- B
+	#missing # do something with A .- B
+	sum(abs.(A .- B))
 end
 
 # ╔═╡ 7d60f056-f931-11ea-39ae-5fa18a955a77
@@ -796,6 +808,9 @@ try
 	"""<h2>It looks like this text is **$(argmin(distances))**!</h2>""" |> HTML
 catch
 end
+
+# ╔═╡ df29829a-6b9a-11eb-21eb-5d12ae79614d
+typeof(distances)
 
 # ╔═╡ 8c7606f0-fb93-11ea-0c9c-45364892cbb8
 md"""
@@ -819,17 +834,50 @@ This also means that we are going to need a larger dataset to train our model on
 We will train our model on the novel [_Emma_ (1815), by Jane Austen](https://en.wikipedia.org/wiki/Emma_(novel)). This work is in the public domain, which means that we can download the whole book as a text file from `archive.org`. We've done the process of downloading and cleaning already, and we have split the text into word and punctuation tokens.
 """
 
+# ╔═╡ c73eeb28-6b9c-11eb-0f76-b159a7a4a018
+# Let's see what the return value of download() is.
+download("http://languagelog.ldc.upenn.edu/myl/Moler1983.pdf")
+
 # ╔═╡ b7601048-fb57-11ea-0754-97dc4e0623a1
 emma = let
 	raw_text = read(download("https://ia800303.us.archive.org/24/items/EmmaJaneAusten_753/emma_pdf_djvu.txt"), String)
 	
 	first_words = "Emma Woodhouse"
+	# We drop the introduction, prefaces, etc. to jump directly to chapter 1 of the book.
 	last_words = "THE END"
 	start_index = findfirst(first_words, raw_text)[1]
 	stop_index = findlast(last_words, raw_text)[end]
 	
 	raw_text[start_index:stop_index]
 end;
+
+# ╔═╡ 0e7c1cf2-6bbd-11eb-1af5-eb91c5b25ca6
+md"
+The following is the reason why we needed to take `[1]` and `[end]` after `findfirst()` and `findlast()`.
+"
+
+# ╔═╡ bb0fa18a-6bbc-11eb-1bfc-8b90a9f89452
+findfirst("julia", "To use vim to edit julia, I chose the vim-plug julia-vim")
+
+# ╔═╡ e22fe214-6bbc-11eb-271d-4fdaffafe02c
+findlast("julia", "To use vim to edit julia, I chose the vim-plug julia-vim")
+
+# ╔═╡ 578a021c-6b9d-11eb-0a5a-7d2133aaf3d9
+md"""
+If we run `raw_text` to inspect it in a cell, we'd find out
+```julia
+UndefVarError: raw_text not defined
+
+  1. top-level scope@Local: 1
+```
+
+It seems that that variable is local to `emma` and disappeared once the definition of `emma` had been done.
+"""
+
+# ╔═╡ 2f652988-6b9d-11eb-080c-1f5a7794b36c
+md"""
+**(?)** The function `read()`, do we really need to specify `String` as the second arg?
+"""
 
 # ╔═╡ cc42de82-fb5a-11ea-3614-25ef961729ab
 function splitwords(text)
@@ -839,6 +887,11 @@ function splitwords(text)
 	# split on whitespace or other word boundaries
 	tokens = split(cleantext, r"(\s|\b)")
 end
+
+# ╔═╡ 6f9d91dc-6bbd-11eb-1b02-df56016a9a44
+md"""
+**(?)** `\s` is white space, understandable; what does `\b` represent? A backspace?
+"""
 
 # ╔═╡ d66fe2b2-fb5a-11ea-280f-cfb12b8296ac
 emma_words = splitwords(emma)
@@ -876,6 +929,38 @@ end
 # ╔═╡ 9f98e00e-fb78-11ea-0f6c-01206e7221d6
 bigrams([1, 2, 3, 42])
 
+# ╔═╡ 813be58c-6bbe-11eb-3364-3fb0874ece6a
+md"""
+I kind of forget and thus become suddenly curious about the `typeof` these arrays and how Pluto displays them. Let's do a tiny experiment.
+"""
+
+# ╔═╡ 164c1102-6bbe-11eb-1160-ab715946eb93
+[[1,2], [2,3], [3,42]]
+
+# ╔═╡ 332c21a2-6bbe-11eb-006f-b1d50f56e91c
+typeof([[1,2], [2,3], [3,42]])
+
+# ╔═╡ 2c542c14-6bbe-11eb-25aa-41d93ac6d7f3
+[1, 2, 3, 42]
+
+# ╔═╡ 45f22822-6bbe-11eb-0e1f-338dab65ed83
+typeof([1, 2, 3, 42])
+
+# ╔═╡ bd70bea4-6bbe-11eb-2eb6-2dc8bbe9608a
+md"""
+So Pluto kind of like displays arrays in the form `Type[element1, element2, element3]`, where like the above `Type` can be `Int64`, `Array{Int64,1}`, etc.
+
+It makes one wonder whether the following is legitimate in a Julia array.
+- It's inlegitimate in `ndarray` (`numpy`)
+- legitimate in Python `list`
+"""
+
+# ╔═╡ 72926be6-6bbe-11eb-0123-0ded9b5b8fe1
+[[1], [2,2], [3,3,3]]
+
+# ╔═╡ 75964a7e-6bbe-11eb-226f-2b7d8429fc90
+typeof([[1], [2,2], [3,3,3]])
+
 # ╔═╡ d7d8cd0c-fb6a-11ea-12bf-2d1448b38162
 md"""
 👉 Next, it's your turn to write a more general function `ngrams` that takes an array and a number $n$, and returns all **subsequences of length $n$**. For example:
@@ -898,7 +983,9 @@ ngrams([1, 2, 3, 42], 2) == bigrams([1, 2, 3, 42])
 
 # ╔═╡ 7be98e04-fb6b-11ea-111d-51c48f39a4e9
 function ngrams(words, n)
-	missing
+  map(1:length(words)-(n-1)) do i
+    words[i:i+(n-1)]
+  end
 end
 
 # ╔═╡ 052f822c-fb7b-11ea-382f-af4d6c2b4fdb
@@ -906,6 +993,19 @@ ngrams([1, 2, 3, 42], 3)
 
 # ╔═╡ 067f33fc-fb7b-11ea-352e-956c8727c79f
 ngrams(forest_words, 4)
+
+# ╔═╡ 114ec026-6bc0-11eb-3d60-2b51098a4401
+typeof(forest_words)
+
+# ╔═╡ 3e85b00e-6bc0-11eb-01bb-25d5ec0d586a
+md"""
+**(?)** `Array{SubString{String},1}`. Why the type was `SubString{String}` instead of simply `String`?
+"""
+
+# ╔═╡ 95819b20-6bc0-11eb-04d6-4dea0e1ca743
+md"""
+#### Stopped (2021/02/10 (水) 23h54)
+"""
 
 # ╔═╡ 7b10f074-fb7c-11ea-20f0-034ddff41bc3
 md"""
@@ -1606,6 +1706,7 @@ bigbreak
 # ╠═a64d719e-6b94-11eb-2f0c-773663fc272e
 # ╠═4c819528-6b94-11eb-090b-19b97deb5391
 # ╟─b85d2000-6b94-11eb-2a79-d134eeebb5f3
+# ╟─508f3efe-6b99-11eb-3e6a-93eacd378c96
 # ╟─6718d26c-f9b0-11ea-1f5a-0f22f7ddffe9
 # ╟─141af892-f933-11ea-1e5f-154167642809
 # ╟─7eed9dde-f931-11ea-38b0-db6bfcc1b558
@@ -1615,25 +1716,46 @@ bigbreak
 # ╟─292e0384-fb57-11ea-0238-0fbe416fc976
 # ╠═7dabee08-f931-11ea-0cb2-c7d5afd21551
 # ╟─3736a094-fb57-11ea-1d39-e551aae62b1d
+# ╠═a71c5756-6b9a-11eb-0982-bfc4fb39d523
+# ╠═b04390f6-6b9a-11eb-0f39-0b4f9db680a7
 # ╠═13c89272-f934-11ea-07fe-91b5d56dedf8
-# ╟─7d60f056-f931-11ea-39ae-5fa18a955a77
+# ╠═7d60f056-f931-11ea-39ae-5fa18a955a77
+# ╠═df29829a-6b9a-11eb-21eb-5d12ae79614d
 # ╟─b09f5512-fb58-11ea-2527-31bea4cee823
 # ╠═8c7606f0-fb93-11ea-0c9c-45364892cbb8
 # ╟─568f0d3a-fb54-11ea-0f77-171718ef12a5
 # ╟─82e0df62-fb54-11ea-3fff-b16c87a7d45b
+# ╠═c73eeb28-6b9c-11eb-0f76-b159a7a4a018
 # ╠═b7601048-fb57-11ea-0754-97dc4e0623a1
-# ╟─cc42de82-fb5a-11ea-3614-25ef961729ab
+# ╟─0e7c1cf2-6bbd-11eb-1af5-eb91c5b25ca6
+# ╠═bb0fa18a-6bbc-11eb-1bfc-8b90a9f89452
+# ╠═e22fe214-6bbc-11eb-271d-4fdaffafe02c
+# ╟─578a021c-6b9d-11eb-0a5a-7d2133aaf3d9
+# ╟─2f652988-6b9d-11eb-080c-1f5a7794b36c
+# ╠═cc42de82-fb5a-11ea-3614-25ef961729ab
+# ╟─6f9d91dc-6bbd-11eb-1b02-df56016a9a44
 # ╠═d66fe2b2-fb5a-11ea-280f-cfb12b8296ac
 # ╠═4ca8e04a-fb75-11ea-08cc-2fdef5b31944
 # ╟─6f613cd2-fb5b-11ea-1669-cbd355677649
 # ╠═91e87974-fb78-11ea-3ce4-5f64e506b9d2
 # ╠═9f98e00e-fb78-11ea-0f6c-01206e7221d6
+# ╟─813be58c-6bbe-11eb-3364-3fb0874ece6a
+# ╠═164c1102-6bbe-11eb-1160-ab715946eb93
+# ╠═332c21a2-6bbe-11eb-006f-b1d50f56e91c
+# ╠═2c542c14-6bbe-11eb-25aa-41d93ac6d7f3
+# ╠═45f22822-6bbe-11eb-0e1f-338dab65ed83
+# ╟─bd70bea4-6bbe-11eb-2eb6-2dc8bbe9608a
+# ╠═72926be6-6bbe-11eb-0123-0ded9b5b8fe1
+# ╠═75964a7e-6bbe-11eb-226f-2b7d8429fc90
 # ╟─d7d8cd0c-fb6a-11ea-12bf-2d1448b38162
 # ╠═7be98e04-fb6b-11ea-111d-51c48f39a4e9
 # ╠═052f822c-fb7b-11ea-382f-af4d6c2b4fdb
 # ╠═067f33fc-fb7b-11ea-352e-956c8727c79f
+# ╠═114ec026-6bc0-11eb-3d60-2b51098a4401
+# ╟─3e85b00e-6bc0-11eb-01bb-25d5ec0d586a
 # ╟─954fc466-fb7b-11ea-2724-1f938c6b93c6
 # ╟─e467c1c6-fbf2-11ea-0d20-f5798237c0a6
+# ╟─95819b20-6bc0-11eb-04d6-4dea0e1ca743
 # ╟─7b10f074-fb7c-11ea-20f0-034ddff41bc3
 # ╟─24ae5da0-fb7e-11ea-3480-8bb7b649abd5
 # ╟─47836744-fb7e-11ea-2305-3fa5819dc154
