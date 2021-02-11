@@ -1221,6 +1221,7 @@ completions_cache(ngrams_circular(forest_words, 3))
 Given a source text, generate a `String` that "looks like" the original text by satisfying the same ngram frequency distribution as the original.
 """
 function generate(source_text::AbstractString, s; n=3, use_words=true)
+	# assign diff function to the variable preprocess according to use_words
 	preprocess = if use_words
 		splitwords
 	else
@@ -1241,6 +1242,9 @@ function generate(source_text::AbstractString, s; n=3, use_words=true)
 	end
 end
 
+# ╔═╡ c9d3adfc-6c4a-11eb-3673-1f07741874c8
+collect("to be or not to be")
+
 # ╔═╡ d7b7a14a-fb90-11ea-3e2b-2fd8f379b4d8
 md"
 #### Interactive demo
@@ -1254,6 +1258,9 @@ Enter your own text in the box below, and use that as training data to generate 
 # ╔═╡ 70169682-fb8c-11ea-27c0-2dad2ff3080f
 md"""Using $(@bind generate_sample_n_letters NumberField(1:5))grams for characters"""
 
+# ╔═╡ c0e40282-6c4a-11eb-22aa-0f6ca37207fe
+typeof(generate_demo_sample)
+
 # ╔═╡ 402562b0-fb63-11ea-0769-375572cc47a8
 md"""Using $(@bind generate_sample_n_words NumberField(1:5))grams for words"""
 
@@ -1263,9 +1270,6 @@ md"""
 
 Uncomment the cell below to generate some Jane Austen text:
 """
-
-# ╔═╡ 49b69dc2-fb8f-11ea-39af-030b5c5053c3
-# generate(emma, 100; n=4) |> Quote
 
 # ╔═╡ cc07f576-fbf3-11ea-2c6f-0be63b9356fc
 if student.name == "Jazzy Doe"
@@ -1326,6 +1330,9 @@ generate(
 	n=generate_sample_n_words, 
 	use_words=true
 ) |> Quote
+
+# ╔═╡ 49b69dc2-fb8f-11ea-39af-030b5c5053c3
+generate(emma, 100; n=4) |> Quote
 
 # ╔═╡ ddef9c94-fb96-11ea-1f17-f173a4ff4d89
 function compimg(img, labels=[c*d for c in replace(alphabet, ' ' => "_"), d in replace(alphabet, ' ' => "_")])
@@ -1838,15 +1845,17 @@ bigbreak
 # ╠═abe2b862-fb69-11ea-08d9-ebd4ba3437d5
 # ╟─f685b4d4-6c3c-11eb-1d81-6b960cdf6c10
 # ╟─3d105742-fb8d-11ea-09b0-cd2e77efd15c
-# ╟─a72fcf5a-fb62-11ea-1dcc-11451d23c085
-# ╟─f83991c0-fb7c-11ea-0e6f-1f80709d00c1
-# ╟─4b27a89a-fb8d-11ea-010b-671eba69364e
+# ╠═a72fcf5a-fb62-11ea-1dcc-11451d23c085
+# ╠═f83991c0-fb7c-11ea-0e6f-1f80709d00c1
+# ╠═4b27a89a-fb8d-11ea-010b-671eba69364e
+# ╠═c9d3adfc-6c4a-11eb-3673-1f07741874c8
 # ╟─d7b7a14a-fb90-11ea-3e2b-2fd8f379b4d8
 # ╟─1939dbea-fb63-11ea-0bc2-2d06b2d4b26c
-# ╟─70169682-fb8c-11ea-27c0-2dad2ff3080f
-# ╟─b5dff8b8-fb6c-11ea-10fc-37d2a9adae8c
+# ╠═70169682-fb8c-11ea-27c0-2dad2ff3080f
+# ╠═c0e40282-6c4a-11eb-22aa-0f6ca37207fe
+# ╠═b5dff8b8-fb6c-11ea-10fc-37d2a9adae8c
 # ╟─402562b0-fb63-11ea-0769-375572cc47a8
-# ╟─ee8c5808-fb5f-11ea-19a1-3d58217f34dc
+# ╠═ee8c5808-fb5f-11ea-19a1-3d58217f34dc
 # ╟─2521bac8-fb8f-11ea-04a4-0b077d77529e
 # ╠═49b69dc2-fb8f-11ea-39af-030b5c5053c3
 # ╟─7f341c4e-fb54-11ea-1919-d5421d7a2c75
