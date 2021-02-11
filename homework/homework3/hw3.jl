@@ -761,6 +761,11 @@ html"<h4 id='mystery-detect'>Mystery sample</h4>
 Small boats are typically found on inland waterways such as rivers and lakes, or in protected coastal areas. However, some boats, such as the whaleboat, were intended for use in an offshore environment. In modern naval terms, a boat is a vessel small enough to be carried aboard a ship. Anomalous definitions exist, as lake freighters 1,000 feet (300 m) long on the Great Lakes are called "boats". 
 """)
 
+# ╔═╡ 18ef8776-6c2f-11eb-3081-a96f3478a137
+md"""
+Try with the following Italian excerpt to see if it is closer to Spanish than to English.
+"""
+
 # ╔═╡ 7df55e6c-f931-11ea-33b8-fdc3be0b6cfa
 mystery_sample
 
@@ -1026,6 +1031,9 @@ _Emma_ consists of $(
 ) billion possible trigrams - that's too much!
 """
 
+# ╔═╡ edaed7c0-6c35-11eb-27df-7d8de07855fb
+8465^3
+
 # ╔═╡ 47836744-fb7e-11ea-2305-3fa5819dc154
 md"""
 $(html"<br>")
@@ -1064,13 +1072,21 @@ Dict(
 ```
 """
 
+# ╔═╡ e3095812-6c36-11eb-05bf-893697c0e8bf
+haskey(healthy, "fruits"), haskey(healthy, "candy")
+
 # ╔═╡ 8ce3b312-fb82-11ea-200c-8d5b12f03eea
 function word_counts(words::Vector)
-	counts = Dict()
-	
-	# your code here
-	
-	return counts
+  counts = Dict()
+  # your code here
+  for word in words
+    if haskey(counts, word)
+      counts[word] += 1
+    else
+      counts[word] = 1
+    end
+  end
+  return counts
 end
 
 # ╔═╡ a2214e50-fb83-11ea-3580-210f12d44182
@@ -1082,7 +1098,7 @@ How many times does `"Emma"` occur in the book?
 """
 
 # ╔═╡ 953363dc-fb84-11ea-1128-ebdfaf5160ee
-emma_count = missing
+emma_count = word_counts(emma_words)["Emma"]
 
 # ╔═╡ 294b6f50-fb84-11ea-1382-03e9ab029a2d
 md"""
@@ -1108,13 +1124,39 @@ If the same ngram occurs multiple times (e.g. "said Emma laughing"), then the la
 👉 Write the function `completions_cache`, which takes an array of ngrams (i.e. an array of arrays of words, like the result of your `ngram` function), and returns a dictionary like described above.
 """
 
+# ╔═╡ c81e5cc4-6c3a-11eb-3e90-239b79413a44
+ngrams(split("to be or not to be that is the question", " "), 3)
+
+# ╔═╡ fb6224ac-6c3b-11eb-1720-bd3fbc8fbd5c
+md"""
+`[1,2,3][:end-1]` is incorrect in Julia and will produce the following error message:
+```
+MethodError: no method matching -(::Symbol, ::Int64)
+Closest candidates are:
+-(!Matched::BigInt, ::Union{Int16, Int32, Int64, Int8}) at gmp.jl:532
+-(!Matched::Base.CoreLogging.LogLevel, ::Integer) at logging.jl:117
+-(!Matched::Missing, ::Number) at missing.jl:115
+...
+  1. top-level scope@Local: 1[inlined]
+```
+"""
+
+# ╔═╡ cbff257a-6c3b-11eb-18b8-f3c965d85879
+[1,2,3][end], [1,2,3][1:end-1]
+
 # ╔═╡ b726f824-fb5e-11ea-328e-03a30544037f
 function completions_cache(grams)
-	cache = Dict()
-	
-	# your code here
-	
-	cache
+  cache = Dict()
+  # your code here
+  for gram in grams
+    body, tail = gram[1:end-1], gram[end]
+    if haskey(cache, body)
+      cache[body] = [cache[body]..., tail]
+    else
+      cache[body] = [tail]
+    end
+  end
+  cache
 end
 
 # ╔═╡ 18355314-fb86-11ea-0738-3544e2e3e816
@@ -1122,6 +1164,11 @@ let
 	trigrams = ngrams(split("to be or not to be that is the question", " "), 3)
 	completions_cache(trigrams)
 end
+
+# ╔═╡ f685b4d4-6c3c-11eb-1d81-6b960cdf6c10
+md"""
+#### Stopped (2021/02/11 (木) 14h44)
+"""
 
 # ╔═╡ 3d105742-fb8d-11ea-09b0-cd2e77efd15c
 md"""
@@ -1254,6 +1301,17 @@ String([rand_sample_letter(letter_frequencies(ex23_sample)) for _ in 1:400]) |> 
 
 # ╔═╡ fd202410-f936-11ea-1ad6-b3629556b3e0
 sample_text(transition_frequencies(clean(ex23_sample)), 400) |> Quote
+
+# ╔═╡ 518192d0-6c2f-11eb-293b-354131db5680
+"""
+Già in epoca classica esisteva un uso "volgare" del latino, pervenutoci attraverso testi non letterari, graffiti, iscrizioni non ufficiali o testi letterari attenti a riprodurre la lingua parlata, come accade spesso nella commedia. Accanto a questo, esisteva un latino "letterario", adottato dagli scrittori classici e legato alla lingua scritta, ma anche alla lingua parlata dai ceti socialmente più rilevanti e più colti.
+
+Con la caduta dell'Impero romano e la formazione dei regni romano-barbarici, si verificò una sclerotizzazione del latino scritto (che diventò lingua amministrativa e scolastica), mentre il latino parlato si fuse sempre più intimamente con i dialetti dei popoli latinizzati, dando vita alle lingue neolatine, tra cui l'italiano.
+
+Gli storici della lingua italiana etichettano le parlate che si svilupparono in questo modo in Italia durante il Medioevo come "volgari italiani", al plurale, e non ancora come "lingua italiana". Le testimonianze disponibili mostrano infatti marcate differenze tra le parlate delle diverse zone, mentre mancava un comune modello volgare di riferimento.[senza fonte]
+
+Il primo documento tradizionalmente riconosciuto di uso di un volgare italiano è un placito notarile, conservato nell'abbazia di Montecassino, proveniente dal Principato di Capua e risalente al 960: è il Placito cassinese (detto anche Placito di Capua o "Placito capuano"), che in sostanza è una testimonianza giurata di un abitante circa una lite sui confini di proprietà tra il monastero benedettino di Capua afferente ai Benedettini dell'abbazia di Montecassino e un piccolo feudo vicino, il quale aveva ingiustamente occupato una parte del territorio dell'abbazia: «Sao ko kelle terre per kelle fini que ki contene trenta anni le possette parte Sancti Benedicti.» ("So [dichiaro] che quelle terre nei confini qui contenuti (qui riportati) per trent'anni sono state possedute dall'ordine benedettino"). È soltanto una frase, che tuttavia per svariati motivi può essere considerata ormai "volgare" e non più schiettamente latina: i casi (salvo il genitivo Sancti Benedicti, che riprende la dizione del latino ecclesiastico) sono scomparsi, sono presenti la congiunzione ko ("che") e il dimostrativo kelle ("quelle"), morfologicamente il verbo sao (dal latino sapio) è prossimo alla forma italiana, ecc. Questo documento è seguito a brevissima distanza da altri placiti provenienti dalla stessa area geografico-linguistica, come il Placito di Sessa Aurunca e il Placito di Teano
+""" |> Quote
 
 # ╔═╡ b5dff8b8-fb6c-11ea-10fc-37d2a9adae8c
 generate(
@@ -1711,6 +1769,8 @@ bigbreak
 # ╟─141af892-f933-11ea-1e5f-154167642809
 # ╟─7eed9dde-f931-11ea-38b0-db6bfcc1b558
 # ╠═7e3282e2-f931-11ea-272f-d90779264456
+# ╟─18ef8776-6c2f-11eb-3081-a96f3478a137
+# ╟─518192d0-6c2f-11eb-293b-354131db5680
 # ╟─7d1439e6-f931-11ea-2dab-41c66a779262
 # ╠═7df55e6c-f931-11ea-33b8-fdc3be0b6cfa
 # ╟─292e0384-fb57-11ea-0238-0fbe416fc976
@@ -1758,19 +1818,25 @@ bigbreak
 # ╟─95819b20-6bc0-11eb-04d6-4dea0e1ca743
 # ╟─7b10f074-fb7c-11ea-20f0-034ddff41bc3
 # ╟─24ae5da0-fb7e-11ea-3480-8bb7b649abd5
+# ╠═edaed7c0-6c35-11eb-27df-7d8de07855fb
 # ╟─47836744-fb7e-11ea-2305-3fa5819dc154
 # ╠═df4fc31c-fb81-11ea-37b3-db282b36f5ef
 # ╠═c83b1770-fb82-11ea-20a6-3d3a09606c62
 # ╟─52970ac4-fb82-11ea-3040-8bd0590348d2
+# ╠═e3095812-6c36-11eb-05bf-893697c0e8bf
 # ╠═8ce3b312-fb82-11ea-200c-8d5b12f03eea
 # ╠═a2214e50-fb83-11ea-3580-210f12d44182
 # ╟─a9ffff9a-fb83-11ea-1efd-2fc15538e52f
 # ╟─808abf6e-fb84-11ea-0785-2fc3f1c4a09f
 # ╠═953363dc-fb84-11ea-1128-ebdfaf5160ee
 # ╟─294b6f50-fb84-11ea-1382-03e9ab029a2d
+# ╠═c81e5cc4-6c3a-11eb-3e90-239b79413a44
+# ╟─fb6224ac-6c3b-11eb-1720-bd3fbc8fbd5c
+# ╠═cbff257a-6c3b-11eb-18b8-f3c965d85879
 # ╠═b726f824-fb5e-11ea-328e-03a30544037f
 # ╠═18355314-fb86-11ea-0738-3544e2e3e816
 # ╠═abe2b862-fb69-11ea-08d9-ebd4ba3437d5
+# ╟─f685b4d4-6c3c-11eb-1d81-6b960cdf6c10
 # ╟─3d105742-fb8d-11ea-09b0-cd2e77efd15c
 # ╟─a72fcf5a-fb62-11ea-1dcc-11451d23c085
 # ╟─f83991c0-fb7c-11ea-0e6f-1f80709d00c1
