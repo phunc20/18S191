@@ -1,3 +1,4 @@
 trash.jl
 trash.py
-.ipynb_checkpoints
+corbeille/
+.ipynb_checkpoints/
