@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.6
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -76,7 +76,7 @@ Feel free to ask questions!
 # ╔═╡ 1e202680-19c4-11eb-29a7-99061b886b3c
 # edit the code below to set your name and kerberos ID (i.e. email without @mit.edu)
 
-student = (name = "Jazzy Doe", kerberos_id = "jazz")
+student = (name = "phunc20", kerberos_id = "reggae")
 
 # you might need to wait until all other cells in this notebook have completed running. 
 # scroll around the page to see what's up
@@ -120,6 +120,18 @@ test_wall = Wall(
 	[8,-1],
 	normalize([-3,1]),
 )
+
+# ╔═╡ f910ef0c-7d80-11eb-1984-f7b791ebe6c0
+md"""
+The next cell showed this when run on my Thinkpad T420 **(old, long-time-no-pacman-Syu-ed Arch Linux)**
+```
+Failed to show value:
+
+could not load library "libGR.so"
+
+/usr/lib/libc.so.6: version `GLIBC_2.33' not found (required by /home/phunc20/.julia/packages/GR/9Vi4m/src/../deps/gr/lib/libGR.so)
+```
+"""
 
 # ╔═╡ 6de1bafc-1a01-11eb-3d67-c9d9b6c3cea8
 function plot_object!(p, wall::Wall)
@@ -1050,6 +1062,7 @@ TODO_note(text) = Markdown.MD(Markdown.Admonition("warning", "TODO note", [text]
 # ╠═d851a202-1ca0-11eb-3da0-51fcb656783c
 # ╠═99c61b74-1941-11eb-2323-2bdb7c120a28
 # ╠═0906b340-19d3-11eb-112c-e568f69deb5d
+# ╟─f910ef0c-7d80-11eb-1984-f7b791ebe6c0
 # ╠═e45e1d36-1a12-11eb-2720-294c4be6e9fd
 # ╟─6de1bafc-1a01-11eb-3d67-c9d9b6c3cea8
 # ╟─eff9329e-1a05-11eb-261f-734127d36750
