@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.21
+# v0.12.20
 
 using Markdown
 using InteractiveUtils
@@ -106,6 +106,12 @@ To start, let's create the concept of a wall. For our purposes, walls will be in
 # ╔═╡ d851a202-1ca0-11eb-3da0-51fcb656783c
 abstract type Object end
 
+# ╔═╡ cbfca492-7d86-11eb-098e-fbed6aa17290
+md"""
+**(?1)** Why need `abstract type Object end` above?
+
+"""
+
 # ╔═╡ 99c61b74-1941-11eb-2323-2bdb7c120a28
 struct Wall <: Object
 	"Position"
@@ -121,17 +127,9 @@ test_wall = Wall(
 	normalize([-3,1]),
 )
 
-# ╔═╡ f910ef0c-7d80-11eb-1984-f7b791ebe6c0
-md"""
-The next cell showed this when run on my Thinkpad T420 **(old, long-time-no-pacman-Syu-ed Arch Linux)**
-```
-Failed to show value:
-
-could not load library "libGR.so"
-
-/usr/lib/libc.so.6: version `GLIBC_2.33' not found (required by /home/phunc20/.julia/packages/GR/9Vi4m/src/../deps/gr/lib/libGR.so)
-```
-"""
+# ╔═╡ 2d33e04a-7d87-11eb-3b2a-9f136a7aded3
+# normalize(v) just divides v by its l2 norm
+sum(normalize([-3,1]).^2)
 
 # ╔═╡ 6de1bafc-1a01-11eb-3d67-c9d9b6c3cea8
 function plot_object!(p, wall::Wall)
@@ -1060,9 +1058,10 @@ TODO_note(text) = Markdown.MD(Markdown.Admonition("warning", "TODO note", [text]
 # ╠═c3e52bf2-ca9a-11ea-13aa-03a4335f2906
 # ╟─92290e54-1940-11eb-1a24-5d1eaee9f6ca
 # ╠═d851a202-1ca0-11eb-3da0-51fcb656783c
+# ╟─cbfca492-7d86-11eb-098e-fbed6aa17290
 # ╠═99c61b74-1941-11eb-2323-2bdb7c120a28
 # ╠═0906b340-19d3-11eb-112c-e568f69deb5d
-# ╟─f910ef0c-7d80-11eb-1984-f7b791ebe6c0
+# ╠═2d33e04a-7d87-11eb-3b2a-9f136a7aded3
 # ╠═e45e1d36-1a12-11eb-2720-294c4be6e9fd
 # ╟─6de1bafc-1a01-11eb-3d67-c9d9b6c3cea8
 # ╟─eff9329e-1a05-11eb-261f-734127d36750
