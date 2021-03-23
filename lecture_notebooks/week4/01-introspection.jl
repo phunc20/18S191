@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.14
+# v0.12.20
 
 using Markdown
 using InteractiveUtils
@@ -205,11 +205,6 @@ with_terminal() do
 	@code_native a * c
 end
 
-# ╔═╡ 293c8888-fcd7-11ea-34f6-4b994aa6baf4
-with_terminal() do
-	@code_native a * c
-end
-
 # ╔═╡ Cell order:
 # ╠═c63c2fbc-f1dd-11ea-3081-cd1f11630f23
 # ╠═ca0e570a-f1dd-11ea-1655-29faf543c20a
@@ -239,6 +234,5 @@ end
 # ╠═3c9f179c-f1dd-11ea-1c63-59429d7fa23a
 # ╟─5e5f78c6-f1de-11ea-0156-25f96ef2b812
 # ╠═dd322a8c-f1dd-11ea-245e-e54922c0f355
-# ╠═293c8888-fcd7-11ea-34f6-4b994aa6baf4
 # ╟─aa907166-f1de-11ea-00cc-a935c275eebd
-# ╟─4c131066-f1dd-11ea-3e4f-4122c5feb20a
+# ╠═4c131066-f1dd-11ea-3e4f-4122c5feb20a

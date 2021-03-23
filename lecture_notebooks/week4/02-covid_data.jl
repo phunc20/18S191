@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.14
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -15,9 +15,10 @@ end
 
 # ╔═╡ db4c1f10-7c37-4513-887a-2467ce673458
 begin
-	using Pkg   
+	#using Pkg
+	import Pkg
+	Pkg.activate(mktempdir())
 	Pkg.add.(["CSV", "DataFrames", "PlutoUI", "Shapefile", "ZipFile", "LsqFit", "Plots"])
-
 	using CSV
 	using DataFrames
 	using PlutoUI
@@ -26,9 +27,6 @@ begin
 	using LsqFit
 	using Plots
 end
-
-# ╔═╡ a26b8742-6a16-445a-ae77-25a4189c0f14
-
 
 # ╔═╡ cbd9c1aa-fc37-11ea-29d9-e3361406796f
 using Dates
@@ -63,7 +61,10 @@ md"""
 """
 
 # ╔═╡ 64d9bcea-7c85-421d-8f1e-17ea8ee694da
-url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
+url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+
+# ╔═╡ 1c0dd27a-8b93-11eb-13f8-c94e24e64935
+
 
 # ╔═╡ c460b0c3-6d3b-439b-8cc7-1c58d6547f51
 download(url, "covid_data.csv");
@@ -213,6 +214,9 @@ md"Now we can extract the data into a standard Julia `Vector`:"
 
 # ╔═╡ 7b5db0f4-fc36-11ea-09a5-49def64f4c79
 US_data = Vector(data[US_row, 5:end])
+
+# ╔═╡ a26b8742-6a16-445a-ae77-25a4189c0f14
+
 
 # ╔═╡ f099424c-0e22-42fb-894c-d8c2a65715fb
 scatter(US_data, m=:o, alpha=0.5, ms=3, xlabel="day", ylabel="cumulative cases", leg=false)
@@ -529,14 +533,15 @@ Unfortunately, published visualisations often hide some of  this information. Th
 # ╠═f7a37706-fcdf-11ea-048a-236b8ed0f1f3
 # ╟─e0493940-8aa7-4733-af72-cd6bc0e37d92
 # ╠═64d9bcea-7c85-421d-8f1e-17ea8ee694da
+# ╠═1c0dd27a-8b93-11eb-13f8-c94e24e64935
 # ╠═c460b0c3-6d3b-439b-8cc7-1c58d6547f51
 # ╟─a7369222-fc20-11ea-314d-4d6b0f0f72eb
 # ╠═db4c1f10-7c37-4513-887a-2467ce673458
-# ╟─1620aa9d-7dcd-4686-b7e4-a72cebe315ed
+# ╠═1620aa9d-7dcd-4686-b7e4-a72cebe315ed
 # ╠═38344160-fc27-11ea-220e-95aa00e4b083
 # ╟─ad43cea2-fc28-11ea-2bc3-a9d81e3766f4
 # ╟─fab64d86-fc28-11ea-0ae1-3ba1b9a14759
-# ╟─3519cf96-fc26-11ea-3386-d97c61ea1b85
+# ╠═3519cf96-fc26-11ea-3386-d97c61ea1b85
 # ╠═a054e048-4fea-487c-9d06-463723c7151c
 # ╠═e9ad97b6-fdef-4f48-bd32-634cfd2ce0e6
 # ╟─aaa7c012-fc1f-11ea-3c6c-89630affb1db
