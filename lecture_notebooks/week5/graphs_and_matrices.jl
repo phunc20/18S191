@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.14
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -35,6 +35,14 @@ md"Graphs from [SpecialGraphs.jl](https://github.com/JuliaGraphs/SpecialGraphs.j
 # ╔═╡ 0adfb774-0273-11eb-29c7-7bab996d8314
 @bind n Slider(2:10, show_value=true)
 
+# ╔═╡ 4396da5e-7f2b-11eb-068a-83ede0a889a3
+md"""
+Explanation of the foregoing cell:
+- `graph` is defined in one of the cells below
+- `nv` stands for `# vertices`
+- `ne` stands for `# edges`
+"""
+
 # ╔═╡ 2446ba56-0272-11eb-2ad1-3d16e6334601
 graph_function = Dict("cycle" => cycle_graph, "wheel" => wheel_graph, "complete" => complete_graph, "path" => path_graph)[choice]
 
@@ -51,12 +59,35 @@ end
 # ╔═╡ d0db318e-0270-11eb-2773-0b01a4ff6e8b
 adj_matrix = Matrix(adjacency_matrix(graph))
 
+# ╔═╡ 2b303d3c-7f2d-11eb-35da-07c93b9cd0b0
+typeof(adj_matrix)
+
+# ╔═╡ 3788320e-7f2d-11eb-2094-518c12fc566b
+typeof(adjacency_matrix(graph))
+
+# ╔═╡ 463208b6-7f2d-11eb-0c5a-21041d263325
+md"""
+Applying `Matrix()` is probably to make the output easier for human eyes.
+Indeed, a `SparseMatrixCSC` when displayed is like:
+$(HTML("<br>"))
+$(HTML("<br>"))
+$(adjacency_matrix(graph))
+"""
+
+# ╔═╡ 8d731370-7f2d-11eb-2e08-474accc5c7b9
+adjacency_matrix(graph)
+
 # ╔═╡ Cell order:
-# ╟─6e986f20-0270-11eb-071e-e14defbf6af7
+# ╠═6e986f20-0270-11eb-071e-e14defbf6af7
 # ╟─66c4bda2-0271-11eb-3447-87dd5a3904bd
-# ╟─fbe17668-0272-11eb-1085-e98901c9ca7d
-# ╟─0adfb774-0273-11eb-29c7-7bab996d8314
-# ╟─83bcda80-0270-11eb-2c17-533a150fd29f
-# ╟─d0db318e-0270-11eb-2773-0b01a4ff6e8b
+# ╠═fbe17668-0272-11eb-1085-e98901c9ca7d
+# ╠═0adfb774-0273-11eb-29c7-7bab996d8314
+# ╠═83bcda80-0270-11eb-2c17-533a150fd29f
+# ╟─4396da5e-7f2b-11eb-068a-83ede0a889a3
+# ╠═d0db318e-0270-11eb-2773-0b01a4ff6e8b
+# ╠═2b303d3c-7f2d-11eb-35da-07c93b9cd0b0
+# ╠═3788320e-7f2d-11eb-2094-518c12fc566b
+# ╠═463208b6-7f2d-11eb-0c5a-21041d263325
+# ╠═8d731370-7f2d-11eb-2e08-474accc5c7b9
 # ╠═9e153cba-0270-11eb-03fc-17dd33397b80
 # ╠═2446ba56-0272-11eb-2ad1-3d16e6334601
