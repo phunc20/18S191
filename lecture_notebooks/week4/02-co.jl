@@ -54,6 +54,15 @@ Unlike `pandas`, we do not write `df["Country/Region"]` in `Julia`. Instead, the
 # ╔═╡ 37819fc6-8bea-11eb-1492-d1e1c361ab39
 unique(df."Country/Region")
 
+# ╔═╡ 6f263ee0-8c8e-11eb-199f-e9560deccacd
+df[:, "Country/Region"]
+
+# ╔═╡ 21bb75fa-8c8e-11eb-30c9-0334362fc043
+typeof(df."Country/Region")
+
+# ╔═╡ 2dd4503c-8c8e-11eb-140a-db91e233f161
+typeof(df[:, "Country/Region"])
+
 # ╔═╡ 1406ce94-8bf2-11eb-2f04-69138797d734
 first(df, 5)
 
@@ -163,6 +172,17 @@ filter(x -> x.country == "United Kingdom", df)
 # ╔═╡ 3562d016-8c5d-11eb-0f97-e7fdec3b281b
 US_row = findfirst(==("US"), all_countries)
 
+# ╔═╡ cf977ade-8ca2-11eb-1066-91352a4cc908
+md"""
+```
+syntax: "==" is not a unary operator
+```
+```julia
+findfirst(=="US", all_countries)
+```
+
+"""
+
 # ╔═╡ 35434624-8c5d-11eb-1f8c-0155978e5ec5
 typeof(==("US"))
 
@@ -204,7 +224,7 @@ We would like to use actual dates instead of just the number of days since the s
 column_names = names(df)
 
 # ╔═╡ e0572944-8c5e-11eb-333b-4dff1af3df93
-date_strings = names(df)[5:end]  # apply String function to each element
+date_strings = names(df)[5:end]
 
 # ╔═╡ b38d749e-8c61-11eb-320d-ad2672ec4b95
 md"""
@@ -228,15 +248,6 @@ dates = parse.(Date, date_strings, date_format) .+ Year(2000)
 
 # ╔═╡ 1156ab60-8c63-11eb-1ec4-593d9ed05d64
 parse.(Date, date_strings, date_format) .+ Day(365)
-
-# ╔═╡ 3e9a5400-8c63-11eb-0781-29a165656b28
-@bind day Clock(0.5)
-
-# ╔═╡ 520dc058-8c63-11eb-2bb5-053752d75eed
-day
-
-# ╔═╡ 2387613a-8c63-11eb-1745-a11190477c7e
-dates[day]
 
 # ╔═╡ 2347185a-8c63-11eb-024d-b310275af4a9
 begin
@@ -266,7 +277,7 @@ begin
 end
 
 # ╔═╡ e5666168-8c70-11eb-024e-d3cff4324249
-plot(dates[2:end], daily_cases, m=:o, leg=false, xlabel="date", ylabel="daily US cases", alpha=0.5)
+plot(dates[2:end], daily_cases, xrotation=60, m=:o, leg=false, xlabel="date", ylabel="daily US cases", alpha=0.5)
 
 # ╔═╡ e55bc00a-8c70-11eb-1b6e-ad0255bd0e00
 md"Note that discrete data should *always* be plotted with points. The lines are just to guide the eye. 
@@ -275,6 +286,9 @@ Cumulating data corresponds to taking the integral of a function and is a *smoot
 
 The oscillations in the daily data seem to be due to a lower incidence of reporting at weekends. We could try to smooth this out by taking a **moving average**, say over the past week:
 "
+
+# ╔═╡ 6d1c1dfe-8c90-11eb-1efd-c71862f7ecda
+length(daily_cases), length(running_mean)
 
 # ╔═╡ e51c303e-8c70-11eb-159a-531b70df0485
 begin
@@ -287,6 +301,10 @@ begin
 	plot(dates[2:end], daily_cases, label="raw daily cases")
 	plot!(dates[8:end], running_mean, m=:o, label="running weakly mean", leg=:topleft)
 end
+
+# ╔═╡ 98c20964-8c90-11eb-34d7-67ba797522c2
+# Do you know why [8:end]?
+length(dates), length(daily_cases), length(running_mean)
 
 # ╔═╡ e4ffe5c8-8c70-11eb-1741-5333bb247991
 md"""
@@ -485,11 +503,14 @@ md"Now we would like to combine the geographical and temporal (time) aspects. On
 # ╔═╡ 52c8a720-8c7b-11eb-3818-bb39950e78e4
 daily = max.(1, diff(Array(df[:, 5:end]), dims=2))
 
+# ╔═╡ f744be52-8c90-11eb-3230-ff99f56c6448
+diff(Array(df[:, 5:end]), dims=2)
+
 # ╔═╡ 52b105d4-8c7b-11eb-3c26-c947f8ef8a8a
 @bind day2 Slider(1:size(daily, 2), show_value=true)
 
 # ╔═╡ be1d450a-8c7b-11eb-08c3-b9a5038e7c7e
-log10(maximum(daily[:, day]))
+log10(maximum(daily[:, day2]))
 
 # ╔═╡ bdfb5220-8c7b-11eb-20eb-874f376d08e1
 dates[day2]
@@ -503,17 +524,26 @@ world_plot = begin
   title!("daily cases per country")
 end
 
-# ╔═╡ 414e5c06-8c7b-11eb-0c06-f5dcb33fe6f3
-
-
-# ╔═╡ 41164b68-8c7b-11eb-122f-878a6b790da0
-
-
 # ╔═╡ 40f9814a-8c7b-11eb-021f-13de83c988de
+size(2*log10.(daily[:, day2])), size(df.longitude)
 
+# ╔═╡ 4bf867c2-8c95-11eb-225e-676c5f681eb3
+size(daily,2)
 
 # ╔═╡ 40c2400e-8c7b-11eb-01bb-8574b647fe80
+@bind day Clock(0.5)
 
+# ╔═╡ 45cd1c20-8c91-11eb-088a-61051d8466ad
+day_legitimate = mod1(day, size(daily, 2))
+
+# ╔═╡ 457caa74-8c91-11eb-0207-eba4c522fa96
+time_plot = begin
+  plot(shp_countries, alpha=0.2)
+  scatter!(df.longitude, df.latitude, leg=false, ms=2*log10.(daily[:, day_legitimate]), alpha=0.7)
+  xlabel!("latitude")
+  ylabel!("longitude")
+  title!("daily cases per country")
+end
 
 # ╔═╡ Cell order:
 # ╠═80b422bc-8be6-11eb-0905-fb94cce1660c
@@ -521,11 +551,14 @@ end
 # ╠═df35ca90-8be9-11eb-029a-1721985cbe90
 # ╟─53adcc10-8bea-11eb-1012-8d0b48c002e3
 # ╠═37819fc6-8bea-11eb-1492-d1e1c361ab39
+# ╠═6f263ee0-8c8e-11eb-199f-e9560deccacd
+# ╠═21bb75fa-8c8e-11eb-30c9-0334362fc043
+# ╠═2dd4503c-8c8e-11eb-140a-db91e233f161
 # ╠═1406ce94-8bf2-11eb-2f04-69138797d734
 # ╠═b823040a-8bf2-11eb-10b5-e534f7222ccd
 # ╠═89943b7a-8bf2-11eb-2d79-b930623872de
 # ╟─61d4dfa6-8bf2-11eb-291d-85a7b64f93a9
-# ╠═4cdc72a2-8c5c-11eb-0999-a97a29a1d504
+# ╟─4cdc72a2-8c5c-11eb-0999-a97a29a1d504
 # ╠═420c2d28-8bed-11eb-007e-cd88bd06e547
 # ╠═02181656-8c50-11eb-1994-936ab84ce68f
 # ╟─791c96c8-8c55-11eb-316f-c5d17a3cb093
@@ -549,13 +582,14 @@ end
 # ╟─359f089c-8c5d-11eb-2a7e-4d381db351e0
 # ╠═3581c914-8c5d-11eb-0a84-03948718e0ff
 # ╠═3562d016-8c5d-11eb-0f97-e7fdec3b281b
+# ╟─cf977ade-8ca2-11eb-1066-91352a4cc908
 # ╠═35434624-8c5d-11eb-1f8c-0155978e5ec5
 # ╠═72697210-8c50-11eb-3824-dd9e199b5f46
 # ╠═81ab32fa-8c5e-11eb-2e5e-3163cce19764
 # ╠═817d0ac4-8c5e-11eb-299f-791036d2b168
 # ╠═815cc7ca-8c5e-11eb-0ae9-ab7792999ea5
 # ╠═8131aade-8c5e-11eb-13c4-cb5089b92422
-# ╠═e12bec60-8c5e-11eb-0b73-99f9ec283fe6
+# ╟─e12bec60-8c5e-11eb-0b73-99f9ec283fe6
 # ╟─e0fc4582-8c5e-11eb-03d3-77b71d3b3893
 # ╟─e0d51f48-8c5e-11eb-21b8-f3390eed1cf3
 # ╠═e0b6fcd4-8c5e-11eb-2234-89b3c3693927
@@ -568,20 +602,19 @@ end
 # ╟─81139bde-8c5e-11eb-119a-276db9e55070
 # ╠═384d6584-8c62-11eb-2dab-9945e5e87b22
 # ╠═1156ab60-8c63-11eb-1ec4-593d9ed05d64
-# ╠═3e9a5400-8c63-11eb-0781-29a165656b28
-# ╠═520dc058-8c63-11eb-2bb5-053752d75eed
-# ╠═2387613a-8c63-11eb-1745-a11190477c7e
 # ╠═2347185a-8c63-11eb-024d-b310275af4a9
-# ╠═233aa0e8-8c63-11eb-1ce1-53a8d793bdbb
+# ╟─233aa0e8-8c63-11eb-1ce1-53a8d793bdbb
 # ╠═2313a3b2-8c63-11eb-3c47-155f972d42c8
 # ╠═e5666168-8c70-11eb-024e-d3cff4324249
 # ╟─e55bc00a-8c70-11eb-1b6e-ad0255bd0e00
 # ╠═e53a8694-8c70-11eb-0e4a-272334af2c8f
+# ╠═6d1c1dfe-8c90-11eb-1efd-c71862f7ecda
 # ╠═e51c303e-8c70-11eb-159a-531b70df0485
 # ╠═e515c0b4-8c70-11eb-07ac-f545ab2b4cbc
+# ╠═98c20964-8c90-11eb-34d7-67ba797522c2
 # ╟─e4ffe5c8-8c70-11eb-1741-5333bb247991
 # ╠═9948deba-8c74-11eb-14cb-8b26d7ebed0b
-# ╠═e4dd6b2e-8c70-11eb-3ff8-8992c983a324
+# ╟─e4dd6b2e-8c70-11eb-3ff8-8992c983a324
 # ╠═e4c84afc-8c70-11eb-0649-af43fd108d82
 # ╟─5add4b6a-8c75-11eb-172f-ff0cded5375f
 # ╠═5abdf382-8c75-11eb-2cca-335ff895ca90
@@ -611,11 +644,13 @@ end
 # ╠═415b31bc-8c7b-11eb-2ddd-7515d3818cc0
 # ╟─52e93a08-8c7b-11eb-36f2-0f8650c3221d
 # ╠═52c8a720-8c7b-11eb-3818-bb39950e78e4
+# ╠═f744be52-8c90-11eb-3230-ff99f56c6448
 # ╠═52b105d4-8c7b-11eb-3c26-c947f8ef8a8a
 # ╠═be1d450a-8c7b-11eb-08c3-b9a5038e7c7e
 # ╠═bdfb5220-8c7b-11eb-20eb-874f376d08e1
 # ╠═bddb928e-8c7b-11eb-36e2-1530fb7f0a06
-# ╠═414e5c06-8c7b-11eb-0c06-f5dcb33fe6f3
-# ╠═41164b68-8c7b-11eb-122f-878a6b790da0
 # ╠═40f9814a-8c7b-11eb-021f-13de83c988de
+# ╠═4bf867c2-8c95-11eb-225e-676c5f681eb3
 # ╠═40c2400e-8c7b-11eb-01bb-8574b647fe80
+# ╠═45cd1c20-8c91-11eb-088a-61051d8466ad
+# ╠═457caa74-8c91-11eb-0207-eba4c522fa96
