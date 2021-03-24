@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.14
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -16,6 +16,7 @@ end
 # ╔═╡ f6d07dee-fdb9-11ea-004a-f1283db60877
 begin
 	using Pkg
+	Pkg.activate(mktempdir())
 	Pkg.add.(["Plots", "StatsBase", "PlutoUI", "DataStructures", "GR"])
 	
 	using DataStructures
@@ -52,7 +53,7 @@ md"## Random sampling"
 # ╔═╡ cd32d0c6-fdb7-11ea-3d3f-d9981951293f
 md"We have already generated random objects using the `rand` function. Let's look at that function in a bit more detail. In this notebook we won't discuss how randomness is generated on a computer; we will just assume that these methods are already available. 
 
-[Note that computers cannot generate true randomness -- they simulate it using complicated deterministic processes. There are [ways](https://www.random.org/) to obtain true randomness from physical processes, such as atmospheric or electronic noisde.]"
+[Note that computers cannot generate true randomness -- they simulate it using complicated deterministic processes. There are [ways](https://www.random.org/) to obtain true randomness from physical processes, such as atmospheric or electronic noise.]"
 
 # ╔═╡ ebccc984-fdb9-11ea-2f94-997184ccc66d
 md"Calling `rand` on a collection like an array or a tuple returns one of the elements in that collection with equal (**uniform**) probability, i.e. each element of the collection has the same chance of being returned. 
@@ -73,6 +74,9 @@ rand( (1, 2) )
 md"Choosing a random element like this is called (uniform) **sampling**.
 
 The `rand` function has many methods that sample from different types of objects."
+
+# ╔═╡ 3a41316e-8cac-11eb-3ffe-23c0a7e238d9
+#methods(rand)
 
 # ╔═╡ e31461dc-fdbc-11ea-1398-89b7ba513f5c
 md"## Rolling a die"
@@ -116,42 +120,118 @@ bar(frequencies, alpha=0.5,
 	size=(400, 300), leg=false,
 	xlabel="outcome", ylabel="number of rolls", xlim=(0, num_sides+1))
 
+# ╔═╡ 68e00f44-8cad-11eb-238e-dd9fa5c7b006
+D = Dict()
+
+# ╔═╡ 711ede26-8cad-11eb-0a97-af30e771e56c
+md"""
+```
+UndefRefError: access to undefined reference
+
+  1. getindex@array.jl:809[inlined]
+  2. iterate@array.jl:785[inlined]
+  3. in(::Int64, ::Array{Any,1})@operators.jl:1057
+  4. top-level scope@Local: 1[inlined]
+```
+```julia
+10 in D.keys
+```
+"""
+
+# ╔═╡ dc9e00ee-8cad-11eb-340a-bb6fbd8ed876
+haskey(D, 10)
+
+# ╔═╡ a784ec92-8cad-11eb-3142-b998af9bb234
+D[1] = 5
+
+# ╔═╡ e385a574-8cad-11eb-164c-77c2b1cef177
+haskey(D, 1)
+
+# ╔═╡ 23ed82f2-8cad-11eb-1385-3dbec103925a
+function my_countmap(array)
+  D = Dict()
+  for i in array
+    if haskey(D, i)
+      D[i] += 1
+    else
+      D[i] = 1
+	end
+  end
+  D
+end
+
+# ╔═╡ 6e1c72e4-8cae-11eb-2020-33d3ac602ec3
+my_countmap(sample), StatsBase.countmap(sample)
+
+# ╔═╡ 5c57762a-8caf-11eb-039a-c35afae8e969
+function his_countmap(array)
+  D = Dict()
+  for i in array
+    D[i] = get(D, i, 0) + 1
+  end
+  D
+end
+
+# ╔═╡ 6206d6f6-8caf-11eb-27cf-7334831bdb0d
+his_countmap(sample), my_countmap(sample), StatsBase.countmap(sample)
+
 # ╔═╡ 2d0be59e-fdbf-11ea-0b86-a50db0aaccaa
 md"We expect the **relative frequency** or **proportion** to be near $1/6$:"
 
 # ╔═╡ db102cb6-fdbf-11ea-0408-61334cb89f6d
 begin
-	max_rolls = 10000
+	max_rolls = 10_000
 	rolls2 = rand(1:num_sides, max_rolls)
 end
 
 # ╔═╡ b596f406-fdbf-11ea-0ed7-ab15d2da9fd2
 @bind num_rolls2 Slider(1:max_rolls, show_value=true)
 
-# ╔═╡ 46ae7d02-fdbf-11ea-1f19-4f94f9bbf851
+# ╔═╡ 86d410b0-8cb0-11eb-2ed0-3d78b06c7534
 begin
-	freqs2 = SortedDict(StatsBase.countmap(rolls2[1:num_rolls2]))
-	
-	ks = collect(keys(freqs2))
-	vs = collect(values(freqs2)) ./ num_rolls2
-	
-	bar(ks, vs, leg=false, alpha=0.5, xlims=(0, num_sides+1),
-		size=(400,300),
-		xlabel="value", ylabel="relative frequency")
-	
-	hline!([1 / num_sides], ls=:dash, lw=3, c=:red)
-	
-	 ylims!(0, 0.3)
+  freqs2 = SortedDict(StatsBase.countmap(rolls2[1:num_rolls2]))
+  
+  ks = collect(keys(freqs2))
+  vs = collect(values(freqs2)) ./ num_rolls2
+  
+  bar(ks, vs, leg=false, alpha=0.5, xlims=(0, num_sides+1),
+    size=(400,300),
+    xlabel="value", ylabel="frequency")
+  
+  hline!([1 / num_sides], ls=:dash, lw=3, c=:red)
+  # ls: line style
+  # lw: line width
+  
+  ylims!(0, 0.3)
 end
 
 # ╔═╡ f97c2aa6-fdbf-11ea-11bf-2b44cd0a90bc
 md"Note that we **pre-generated** the data, to avoid generating new random samples each time."
 
+# ╔═╡ 108f8330-8cb0-11eb-2793-cb53eb12f569
+freqs2
+
+# ╔═╡ 26ddb198-8cb0-11eb-20bc-53bff2bbebe8
+keys(freqs2)
+
+# ╔═╡ 351c72a0-8cb0-11eb-1cfc-91e9fa7030d9
+collect(keys(freqs2))
+
+# ╔═╡ 3b1e0d18-8cb0-11eb-12dd-e9725bc57c37
+typeof(collect(keys(freqs2)))
+
+# ╔═╡ b03bb638-8cb0-11eb-07d2-2b9ce2b180de
+collect(values(freqs2))
+
+# ╔═╡ b9c72638-8cb0-11eb-2baa-07985c1de7eb
+freqs2
+
 # ╔═╡ 24674186-fdc5-11ea-2a67-3bd71199ae6e
 md"## Random variables"
 
 # ╔═╡ 2b954fca-fdc5-11ea-149f-e5f7f6d49407
-md"Let's call $X$ the outcome of flipping one coin. Each time we run the experiment, $X$ will take a different value. This makes $X$ an example of a **random variable**. 
+md"""
+Let's call $X$ the outcome of rolling a die flipping one coin. Each time we run the experiment, $X$ will take a different value. This makes $X$ an example of a **random variable**. 
 
 [Giving a proper mathematical description of this is rather tricky; see an advanced probability course.]
 
@@ -159,8 +239,8 @@ We write
 
 $$\mathbb{P}(X=1) = \textstyle \frac{1}{6}$$
 
-to say that the probability that $X$ takes the value 1 is $\frac{1}{6}$.
-"
+to say that the probability that $X$ takes the value $1$ is $\frac{1}{6}$.
+"""
 
 # ╔═╡ 112c47a4-fe0f-11ea-04a4-adc7e339a352
 md"## Uniform random numbers"
@@ -181,6 +261,9 @@ rand(Float64)
 # ╔═╡ d5743c58-fe0e-11ea-0391-c7591b944bdd
 rand()
 
+# ╔═╡ 05763b5a-8c9b-11eb-1a93-d9fdf059b34e
+rand(Int8)
+
 # ╔═╡ bf084b00-fdc1-11ea-04ca-1757996125fd
 md"""
 Let's see what this looks like. We'll sample uniform random variates in $[0, 1]$ and plot them as a function of "time" on the $x$ axis (i.e. the number of the trial in which they appeared). We also plot the outcomes along the $y$ axis so that we can see how the interval $[0, 1]$ gets covered:
@@ -200,7 +283,9 @@ begin
 	r = sample2[1:num_samples]
 	scatter(r, 1:length(r), alpha=0.5, leg=false,
 			size=(400, 300))
+	# 1:length(r) as the height
 	scatter!(r, zeros(length(r)), alpha=0.5)
+	# zeros(length(r)) as the height
 	
 	ylims!(-10, max_samples)
 	xlims!(0, 1)
@@ -208,6 +293,11 @@ begin
 	xlabel!("random variate")
 	ylabel!("position in sequence (time)")
 end
+
+# ╔═╡ e42ccb16-8cb6-11eb-3168-b18472f357a6
+md"""
+Stopped here (2021/03/24)
+"""
 
 # ╔═╡ e5994394-fe0e-11ea-1350-51442f863799
 md"How uniform is the sampling? Let's plot a **histogram**. This splits the interval $[0, 1]$ up into boxes and counts the number (frequency) of data that fall into each box:"
@@ -409,6 +499,7 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╠═cf2a7ec2-fdbc-11ea-1010-190de6ff85d1
 # ╠═1ef8cf70-fe13-11ea-257b-cbc9abd8ab3b
 # ╟─f317779a-fdbc-11ea-1afa-2dc25c9a16f8
+# ╠═3a41316e-8cac-11eb-3ffe-23c0a7e238d9
 # ╟─e31461dc-fdbc-11ea-1398-89b7ba513f5c
 # ╟─b6aec1dc-fdbc-11ea-2345-831cff1d5e7c
 # ╠═2fea1cb6-fdba-11ea-2744-f5dd5fe0fcd7
@@ -419,12 +510,27 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╟─a36f553e-fdba-11ea-2a6a-b3ba05d11acd
 # ╠═a03b164e-fdba-11ea-0c7f-a59d54b2f813
 # ╠═10b83e00-fdbe-11ea-260d-65cf5e080534
-# ╟─a6da8b1a-fe89-11ea-364c-958bddfa4612
+# ╠═a6da8b1a-fe89-11ea-364c-958bddfa4612
+# ╠═68e00f44-8cad-11eb-238e-dd9fa5c7b006
+# ╟─711ede26-8cad-11eb-0a97-af30e771e56c
+# ╠═dc9e00ee-8cad-11eb-340a-bb6fbd8ed876
+# ╠═a784ec92-8cad-11eb-3142-b998af9bb234
+# ╠═e385a574-8cad-11eb-164c-77c2b1cef177
+# ╠═23ed82f2-8cad-11eb-1385-3dbec103925a
+# ╠═6e1c72e4-8cae-11eb-2020-33d3ac602ec3
+# ╠═5c57762a-8caf-11eb-039a-c35afae8e969
+# ╠═6206d6f6-8caf-11eb-27cf-7334831bdb0d
 # ╟─2d0be59e-fdbf-11ea-0b86-a50db0aaccaa
 # ╠═db102cb6-fdbf-11ea-0408-61334cb89f6d
 # ╠═b596f406-fdbf-11ea-0ed7-ab15d2da9fd2
-# ╟─46ae7d02-fdbf-11ea-1f19-4f94f9bbf851
+# ╠═86d410b0-8cb0-11eb-2ed0-3d78b06c7534
 # ╟─f97c2aa6-fdbf-11ea-11bf-2b44cd0a90bc
+# ╠═108f8330-8cb0-11eb-2793-cb53eb12f569
+# ╠═26ddb198-8cb0-11eb-20bc-53bff2bbebe8
+# ╠═351c72a0-8cb0-11eb-1cfc-91e9fa7030d9
+# ╠═3b1e0d18-8cb0-11eb-12dd-e9725bc57c37
+# ╠═b03bb638-8cb0-11eb-07d2-2b9ce2b180de
+# ╠═b9c72638-8cb0-11eb-2baa-07985c1de7eb
 # ╟─24674186-fdc5-11ea-2a67-3bd71199ae6e
 # ╟─2b954fca-fdc5-11ea-149f-e5f7f6d49407
 # ╟─112c47a4-fe0f-11ea-04a4-adc7e339a352
@@ -432,11 +538,13 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╟─cbe5bbc6-fe0e-11ea-17c7-095c0d485bdd
 # ╠═6d7f1ca4-fe8a-11ea-3b20-b3df98a4201b
 # ╠═d5743c58-fe0e-11ea-0391-c7591b944bdd
+# ╠═05763b5a-8c9b-11eb-1a93-d9fdf059b34e
 # ╟─bf084b00-fdc1-11ea-04ca-1757996125fd
 # ╠═019bd65c-fdc3-11ea-01ba-51d497f875d2
 # ╠═2dd45d84-fdc3-11ea-1b61-6bc6467a5013
-# ╟─08af602e-fdc3-11ea-0e47-af1047c7bd13
-# ╟─da913e08-fdc2-11ea-14c1-6bb4fdaf9353
+# ╠═08af602e-fdc3-11ea-0e47-af1047c7bd13
+# ╠═da913e08-fdc2-11ea-14c1-6bb4fdaf9353
+# ╟─e42ccb16-8cb6-11eb-3168-b18472f357a6
 # ╟─e5994394-fe0e-11ea-1350-51442f863799
 # ╠═3620150e-fe0f-11ea-0eff-91a85ccf3864
 # ╠═479e0232-fe0f-11ea-308e-2928fe213807
