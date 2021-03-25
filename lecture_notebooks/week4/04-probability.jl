@@ -17,12 +17,18 @@ end
 begin
 	using Pkg
 	Pkg.activate(mktempdir())
-	Pkg.add.(["Plots", "StatsBase", "PlutoUI", "DataStructures", "GR"])
+	Pkg.add.(["Plots",
+			  "StatsBase",
+			  "PlutoUI",
+			  "DataStructures",
+			  "GR",
+			  "BenchmarkTools"])
 	
 	using DataStructures
 	using Plots
 	using StatsBase
 	using PlutoUI
+	using BenchmarkTools
 end
 
 # ╔═╡ c3dc6d9c-fdb6-11ea-3b74-e1ecfa6c6f49
@@ -231,7 +237,7 @@ md"## Random variables"
 
 # ╔═╡ 2b954fca-fdc5-11ea-149f-e5f7f6d49407
 md"""
-Let's call $X$ the outcome of rolling a die flipping one coin. Each time we run the experiment, $X$ will take a different value. This makes $X$ an example of a **random variable**. 
+Let's call $X$ the outcome of $(HTML("<s>flipping one coin</s>")) rolling a die. Each time we run the experiment, $$X$$ will take a different value. This makes $$X$$ an example of a **random variable**. 
 
 [Giving a proper mathematical description of this is rather tricky; see an advanced probability course.]
 
@@ -294,11 +300,6 @@ begin
 	ylabel!("position in sequence (time)")
 end
 
-# ╔═╡ e42ccb16-8cb6-11eb-3168-b18472f357a6
-md"""
-Stopped here (2021/03/24)
-"""
-
 # ╔═╡ e5994394-fe0e-11ea-1350-51442f863799
 md"How uniform is the sampling? Let's plot a **histogram**. This splits the interval $[0, 1]$ up into boxes and counts the number (frequency) of data that fall into each box:"
 
@@ -324,7 +325,7 @@ Since the sampling is uniform, we can take $X = [0, 0.25]$. The definition of "u
 The recipe for sampling an event with probability $p$ is then as follows:
 
 > 1. Generate a uniform random variate $r \in [0, 1]$, using `rand()`.
->  2. If $r < p$ then return `true`, else return `false`.
+> 2. If $r < p$ then return `true`, else return `false`.
 """
 
 # ╔═╡ ba9939f0-fe0f-11ea-0328-6780c29cc01c
@@ -348,13 +349,24 @@ begin
 	xlims!(0, 1)
 	
 	vline!([pp], ls=:dash, lw=3, c=:green)
-	annotate!(170, pp+0.06, text("p", color=:green))
+	#annotate!(170, pp+0.06, text("p", color=:green))
+	annotate!(pp+0.06, 500, text("p", color=:green))
 	
 	which = findall(x -> x .< pp, r2)
 	scatter!(r2[which], which, m=:square, alpha=0.5)
-	scatter!(r2[which], zeros(length(r2[which])), m=:square, alpha=0.5)
+	#scatter!(r2[which], zeros(length(r2[which])), m=:square, alpha=0.5)
+	scatter!(r2[which], zeros(length(which)), m=:square, alpha=0.5)
 
 end
+
+# ╔═╡ 14502be0-8d24-11eb-34e6-9515f05728c2
+pp
+
+# ╔═╡ afde6fd2-8d23-11eb-3b2c-edf479ddcfcb
+r2
+
+# ╔═╡ 212375b6-8d24-11eb-0b61-ef54ca2a2b33
+findall(x -> x .< pp, r2)
 
 # ╔═╡ f80a700a-fe15-11ea-2c48-9f499842e45d
 md"We expect that out of $N$ trials, about $pN$ will be below $p$. So the proportion of the total number is $(pN) / N \simeq p$.
@@ -420,13 +432,29 @@ flips(n, p) = count( bernoulli(p) for i = 1:n )
 # ╔═╡ d450742c-fdd7-11ea-2477-b37441b6ddfa
 flips(20, 0.3)
 
+# ╔═╡ faee6712-8d27-11eb-2a28-3f0dfb701764
+md"""
+Let's use `@benchmark` from `BenchmarkTools.jl` to measure the diff btw
+- using $(HTML("<s>list</s>")) array comprehension
+- not using array comprehension
+"""
+
+# ╔═╡ 6a79175e-8d27-11eb-190e-d1ddc716c43c
+@benchmark flips(20, 0.3)
+
+# ╔═╡ 7e249da0-8d27-11eb-238e-25f2df931a17
+comprehension_flips(n, p) = count([bernoulli(p) for i = 1:n])
+
+# ╔═╡ c924f244-8d27-11eb-03d0-0fb785b0b819
+@benchmark comprehension_flips(20, 0.3)
+
 # ╔═╡ dca0b5a6-fdd7-11ea-15e4-0320a1ceebff
 md"The function `count` counts the number of `true`s in its argument. The argument itself looks like an array comprehension, but with no square brackets; this is called a **generator expression**. Since `count` does not need to **materialize** the array, i.e. create it in memory, it can be faster."
 
 # ╔═╡ 2c2479a0-fdd8-11ea-19a2-db21219dd7c3
 md"""The outcome of flipping the coin is another random variable, $H_{n}$. Clearly its possible values are the integers between $0$ and $n$. But intuitively we expect that it's very *unlikely* to have either exactly $0$ or exactly $n$ heads. This is another example of a *non-uniform* random variable.
 
-What again need to calculate the **probability distribution** of the random variable $H_{n,p}$, i.e. the probability that it takes on each of its possible values.
+We again need to calculate the **probability distribution** of the random variable $\mathbb{P}(H_{n} = k), \;\forall\; k = 0, \ldots, n$, i.e. the probability that it takes on each of its possible values.
 
 We can calculate this numerically by thinking of "flipping $n$ coins" as a single experiment, and running that experiment many times:
 """
@@ -444,7 +472,7 @@ num_coins = 100
 run_experiment(num_coins, 0.3, num_experiments)
 
 # ╔═╡ caf791ca-fdd8-11ea-2234-bdc14d214cac
-md"As expected, we get back a dataset containing integers between 0 and 20, but actually 1 and 20 occur few times. 
+md"As expected, we get back a dataset containing integers between 0 and `num_coins`, but actually 0 and `num_coins` occur few times. 
 
 How can we calculate the probability distribution? We can use `countmap` again to obtain the frequencies:"
 
@@ -470,6 +498,15 @@ begin
 	xlabel!("number of heads")
 	ylabel!("proportion")
 end
+
+# ╔═╡ 294b4d44-8d2a-11eb-37df-955edb6f8860
+freqs3  # SortedDict() sorts the keys, not the values
+
+# ╔═╡ 7a334d56-8d2a-11eb-1653-65a826203b66
+collect(keys(freqs3))
+
+# ╔═╡ 82c84656-8d2a-11eb-05c5-e1460a5ebcb9
+collect(values(freqs3))
 
 # ╔═╡ adf1c626-fdd9-11ea-3535-2d2219feda56
 md"As we take more samples, the **empirical distribution** (calculated from the data) converges to the true underlying **population distribution** (the theoretical distribution for this random variable)."
@@ -532,7 +569,7 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╠═b03bb638-8cb0-11eb-07d2-2b9ce2b180de
 # ╠═b9c72638-8cb0-11eb-2baa-07985c1de7eb
 # ╟─24674186-fdc5-11ea-2a67-3bd71199ae6e
-# ╟─2b954fca-fdc5-11ea-149f-e5f7f6d49407
+# ╠═2b954fca-fdc5-11ea-149f-e5f7f6d49407
 # ╟─112c47a4-fe0f-11ea-04a4-adc7e339a352
 # ╟─69c2c1e4-fdc0-11ea-0e76-335b6e06057d
 # ╟─cbe5bbc6-fe0e-11ea-17c7-095c0d485bdd
@@ -544,7 +581,6 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╠═2dd45d84-fdc3-11ea-1b61-6bc6467a5013
 # ╠═08af602e-fdc3-11ea-0e47-af1047c7bd13
 # ╠═da913e08-fdc2-11ea-14c1-6bb4fdaf9353
-# ╟─e42ccb16-8cb6-11eb-3168-b18472f357a6
 # ╟─e5994394-fe0e-11ea-1350-51442f863799
 # ╠═3620150e-fe0f-11ea-0eff-91a85ccf3864
 # ╠═479e0232-fe0f-11ea-308e-2928fe213807
@@ -554,7 +590,10 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╟─ba9939f0-fe0f-11ea-0328-6780c29cc01c
 # ╠═ca62d4a4-fe0f-11ea-3623-73a11752dc8c
 # ╠═8fa5e992-fde1-11ea-0c65-3d83d42729ea
-# ╟─39b9d2a0-fde1-11ea-2189-97a95849152f
+# ╠═39b9d2a0-fde1-11ea-2189-97a95849152f
+# ╠═14502be0-8d24-11eb-34e6-9515f05728c2
+# ╠═afde6fd2-8d23-11eb-3b2c-edf479ddcfcb
+# ╠═212375b6-8d24-11eb-0b61-ef54ca2a2b33
 # ╟─f80a700a-fe15-11ea-2c48-9f499842e45d
 # ╟─1fa92ed0-fdc4-11ea-0f6c-9178b21b259c
 # ╠═4bf82e84-fdc4-11ea-2abf-19174c74f726
@@ -570,6 +609,10 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╠═727b0e56-fdd7-11ea-28d1-5b859a5f8a29
 # ╠═dabc00d6-fe97-11ea-0180-cd138faaab5d
 # ╠═d450742c-fdd7-11ea-2477-b37441b6ddfa
+# ╟─faee6712-8d27-11eb-2a28-3f0dfb701764
+# ╠═6a79175e-8d27-11eb-190e-d1ddc716c43c
+# ╠═7e249da0-8d27-11eb-238e-25f2df931a17
+# ╠═c924f244-8d27-11eb-03d0-0fb785b0b819
 # ╟─dca0b5a6-fdd7-11ea-15e4-0320a1ceebff
 # ╟─2c2479a0-fdd8-11ea-19a2-db21219dd7c3
 # ╠═aa63b25e-fdd8-11ea-2b30-ed13d2072488
@@ -579,6 +622,9 @@ Note that we have not said what we mean by **converges** here. Making that preci
 # ╟─caf791ca-fdd8-11ea-2234-bdc14d214cac
 # ╠═15231f76-fdd9-11ea-361e-0f85e1c3ace2
 # ╠═29edd4e6-fdd9-11ea-016b-9142be69bf68
-# ╟─3398d3a6-fdd9-11ea-0845-f54dab63b2dc
+# ╠═3398d3a6-fdd9-11ea-0845-f54dab63b2dc
+# ╠═294b4d44-8d2a-11eb-37df-955edb6f8860
+# ╠═7a334d56-8d2a-11eb-1653-65a826203b66
+# ╠═82c84656-8d2a-11eb-05c5-e1460a5ebcb9
 # ╟─adf1c626-fdd9-11ea-3535-2d2219feda56
 # ╟─92efff82-fde3-11ea-010d-a188a852b79b
