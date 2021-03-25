@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.14
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -24,7 +24,7 @@ begin
 	Pkg.add(["Plots", "PlutoUI",])
 
 	using Plots
-	plotly()
+	#plotly()
 	using PlutoUI
 end
 
@@ -47,7 +47,7 @@ Feel free to ask questions!
 # ╔═╡ 095cbf46-0403-11eb-0c37-35de9562cebc
 # edit the code below to set your name and kerberos ID (i.e. email without @mit.edu)
 
-student = (name = "Jazzy Doe", kerberos_id = "jazz")
+student = (name = "phunc20", kerberos_id = "reggae")
 
 # you might need to wait until all other cells in this notebook have completed running. 
 # scroll around the page to see what's up
@@ -83,8 +83,7 @@ In this model, an individual who is infected has a constant probability $p$ to r
 
 # ╔═╡ 02b0c2fc-0415-11eb-2b40-7bca8ea4eef9
 function bernoulli(p::Number)
-	
-	return missing
+  return rand() < p
 end
 
 # ╔═╡ 76d117d4-0403-11eb-05d2-c5ea47d06f43
@@ -94,12 +93,15 @@ md"""
 
 # ╔═╡ d57c6a5a-041b-11eb-3ab4-774a2d45a891
 function recovery_time(p)
-	if p ≤ 0
-		throw(ArgumentError("p must be positive: p = 0 cannot result in a recovery"))
-	end
-	
-	# Your code here. See the comment below about the p ≤ 0 case.
-	return missing
+  if p ≤ 0
+    throw(ArgumentError("p must be positive: p = 0 cannot result in a recovery"))
+  end
+  # Your code here. See the comment below about the p ≤ 0 case.
+  n_days = 1
+  while !bernoulli(p)
+    n_days += 1
+  end
+  return n_days
 end
 
 # ╔═╡ 6db6c894-0415-11eb-305a-c75b119d89e9
@@ -121,7 +123,7 @@ md"""
 
 # ╔═╡ 73047bba-0416-11eb-1047-23e9c3dbde05
 interpretation_of_p_equals_one = md"""
-blablabla
+The infected person is bound to recover after one day.
 """
 
 # ╔═╡ 76f62d64-0403-11eb-27e2-3de58366b619
@@ -130,10 +132,15 @@ md"""
 👉 Write a function `do_experiment(p, N)` that runs the function `recovery_time` `N` times and collects the results into a vector.
 """
 
+# ╔═╡ 22375a20-8d39-11eb-366b-536368690318
+Vector([1,3,4]), [3,4,1]
+
+# ╔═╡ 30e98458-8d39-11eb-2915-9b40d6653f29
+typeof(Vector([1,3,4])), typeof([3,4,1])
+
 # ╔═╡ c5c7cb86-041b-11eb-3360-45463105f3c9
 function do_experiment(p, N)
-	
-	return missing
+  return [recovery_time(p) for _ in 1:N]
 end
 
 # ╔═╡ d8abd2f6-0416-11eb-1c2a-f9157d9760a7
@@ -162,14 +169,28 @@ Dict(
 As with any probability distribution, it should be normalised to $1$, in the sense that the *total* probability should be $1$.
 """
 
+# ╔═╡ 223e66f0-8d3c-11eb-3b5c-51f510b4a56a
+Dict(zip((1,2,3), ['a', 'b', 'c']))
+
 # ╔═╡ 105d347e-041c-11eb-2fc8-1d9e5eda2be0
 function frequencies(values)
-	
-	return missing
+  D = Dict()
+  for v in values
+    D[v] = get(D, v, 0) + 1
+  end
+  #return map(x -> x / length(values), D)
+  #return D
+  return Dict(zip(keys(D), Base.values(D) ./ length(values)))
 end
+
+# ╔═╡ 4ef4a0a8-8d3a-11eb-1bae-633f10ac2d99
+small_experiment
 
 # ╔═╡ 1ca7a8c2-041a-11eb-146a-15b8cdeaea72
 frequencies(small_experiment)
+
+# ╔═╡ b026c12e-8d3c-11eb-2245-3f683e20b92b
+typeof(frequencies([7, 8, 9, 7]))
 
 # ╔═╡ 77428072-0403-11eb-0068-81e3728f2ebe
 md"""
@@ -187,8 +208,14 @@ The frequencies dictionary is difficult to interpret on its own, so instead, we 
 Plots.jl comes with a function `bar`, which does exactly what we want:
 """
 
+# ╔═╡ d2bbe6a2-8d45-11eb-0422-6582da202a92
+D1 = frequencies(large_experiment)
+
+# ╔═╡ 94ab2812-8d47-11eb-05d6-5b08efbc5cb2
+typeof(D1)
+
 # ╔═╡ 8a28c56e-04b4-11eb-279c-3b4dfb2a9f9b
-bar(frequencies(large_experiment))
+bar(D1, leg=false)
 
 # ╔═╡ 9374e63c-0493-11eb-0952-4b97512d7cdb
 md"""
@@ -251,9 +278,10 @@ md"""
 
 # ╔═╡ f1f89502-0494-11eb-2303-0b79d8bbd13f
 function frequencies_plot_with_mean(data)
-	# start out by copying the frequencies_plot_with_maximum function
-	
-	return missing
+  # start out by copying the frequencies_plot_with_maximum function
+  base = bar(frequencies(data))
+  vline!(base, [sum(data)/length(data)], label="mean")
+  return base
 end
 
 # ╔═╡ 06089d1e-0495-11eb-0ace-a7a7dc60e5b2
@@ -265,7 +293,17 @@ md"""
 """
 
 # ╔═╡ bb63f3cc-042f-11eb-04ff-a128aec3c378
+md"""
+`p_interactive`
+$(@bind p_interactive Slider(0.01:0.01:1, show_value=true))
+$(html"<br>")
+`N_interactive`
+$(@bind N_interactive Slider(1:100_000, show_value=true))
+"""
 
+
+# ╔═╡ 1fbceec2-8d52-11eb-01b0-d9698cce9549
+frequencies_plot_with_mean(do_experiment(p_interactive, N_interactive))
 
 # ╔═╡ bb8aeb58-042f-11eb-18b8-f995631df619
 md"""
@@ -279,7 +317,13 @@ md"""
 """
 
 # ╔═╡ 7bb8e426-0495-11eb-3a8b-cbbab61a1631
-
+begin
+  frequencies_plot_with_mean(do_experiment(p_interactive, N_interactive))
+  x = 1:75
+  #y = [p_interactive * (1-p_interactive)^(t-1) for t in x]
+  y = p_interactive .* (1-p_interactive).^(x.-1)
+  scatter!(x, y, label="theoretical")
+end
 
 # ╔═╡ 77db111e-0403-11eb-2dea-4b42ceed65d6
 md"""
@@ -289,7 +333,14 @@ md"""
 """
 
 # ╔═╡ 7335de44-042f-11eb-2873-8bceef722432
-
+begin
+  NN = 10_000
+  pp = 0.001:0.001:1
+  means = [sum(array)/length(array) for array in do_experiment.(pp, NN)]
+  plot(pp, means, leg=false, lw=2)
+  xlabel!("p")
+  ylabel!("mean recovery time")
+end
 
 # ╔═╡ 61789646-0403-11eb-0042-f3b8308f11ba
 md"""
@@ -321,7 +372,10 @@ We have just defined a new type `InfectionStatus`, as well as names `S`, `I` and
 """
 
 # ╔═╡ 7f4e121c-041d-11eb-0dff-cd0cbfdfd606
-test_status = missing
+test_status = S
+
+# ╔═╡ 03ff0806-8d5b-11eb-19a9-85a3da141998
+test_status
 
 # ╔═╡ 7f744644-041d-11eb-08a0-3719cc0adeb7
 md"""
@@ -329,12 +383,15 @@ md"""
 """
 
 # ╔═╡ 88c53208-041d-11eb-3b1e-31b57ba99f05
-
+typeof(test_status)
 
 # ╔═╡ 847d0fc2-041d-11eb-2864-79066e223b45
 md"""
 👉 Convert `x` to an integer using the `Integer` function. What value does it have? What values do `I` and `R` have?
 """
+
+# ╔═╡ 39077e26-8d5a-11eb-3c6d-750d6ff23b3f
+Integer(S), Integer(I), Integer(R)
 
 # ╔═╡ 860790fc-0403-11eb-2f2e-355f77dcc7af
 md"""
@@ -344,9 +401,15 @@ For each agent we want to keep track of its infection status and the number of *
 """
 
 # ╔═╡ ae4ac4b4-041f-11eb-14f5-1bcde35d18f2
-mutable struct Agent
-	status::InfectionStatus
-	num_infected::Int64
+begin
+  mutable struct Agent
+    status::InfectionStatus
+    num_infected::Int64
+  end
+
+  function Agent()
+    return Agent(S, 0)
+  end
 end
 
 # ╔═╡ ae70625a-041f-11eb-3082-0753419d6d57
@@ -357,7 +420,7 @@ When you define a new type like this, Julia automatically defines one or more **
 """
 
 # ╔═╡ 60a8b708-04c8-11eb-37b1-3daec644ac90
-
+methods(Agent)
 
 # ╔═╡ 189cae1e-0424-11eb-2666-65bf297d8bdd
 md"""
@@ -365,11 +428,21 @@ md"""
 """
 
 # ╔═╡ 18d308c4-0424-11eb-176d-49feec6889cf
-test_agent = missing
+test_agent = Agent(S, 0)
+
+# ╔═╡ 36deff1c-8d5c-11eb-1ac6-eb4dd7c8ba08
+md"""
+```
+MethodError: no method matching Main.workspace3.Agent(; status=Main.workspace3.I, num_infected=1)
+```
+```julia
+Agent(status=I, num_infected=1)
+```
+"""
 
 # ╔═╡ 190deebc-0424-11eb-19fe-615997093e14
 md"""
-👉 For convenience, define a new constructor (i.e. a new method for the function) that takes no arguments and creates an `Agent` with status `S` and number infected 0, by calling one of the default constructors that Julia creates. This new method lives *outside* (not inside) the definition of the `struct`. (It is called an **outer constructor**.)
+👉 For convenience, define a new constructor (i.e. a new method for the function) that takes no arguments and creates an `Agent` with status `S` and number infected `0`, by calling one of the default constructors that Julia creates. This new method lives *outside* (not inside) the definition of the `struct`. (It is called an **outer constructor**.)
 
 (In Pluto, multiple methods for the same function need to be combined in a single cell using a `begin end` block.)
 
@@ -389,8 +462,13 @@ md"""
 
 # ╔═╡ 98beb336-0425-11eb-3886-4f8cfd210288
 function set_status!(agent::Agent, new_status::InfectionStatus)
-	
-	# your code here
+  # your code here
+  agent.status = new_status
+end
+
+# ╔═╡ 1e55dcee-8d5f-11eb-389b-2f22b8d9788e
+function set_num_infected!(agent::Agent, new_num::Int64)
+  agent.num_infected = new_num
 end
 
 # ╔═╡ 866299e8-0403-11eb-085d-2b93459cc141
@@ -401,15 +479,19 @@ md"""
 
 # ╔═╡ 9a837b52-0425-11eb-231f-a74405ff6e23
 function is_susceptible(agent::Agent)
-	
-	return missing
+  return agent.status == S
 end
 
 # ╔═╡ a8dd5cae-0425-11eb-119c-bfcbf832d695
 function is_infected(agent::Agent)
-	
-	return missing
+  return agent.status == I
 end
+
+# ╔═╡ 85f7bd34-8d5f-11eb-094a-17a41e25cfd2
+md"""
+**(?)** Read the content of the foregoing cell and try to understand fully how it is written.
+
+"""
 
 # ╔═╡ 8692bf42-0403-11eb-191f-b7d08895274f
 md"""
@@ -420,8 +502,10 @@ md"""
 
 # ╔═╡ 7946d83a-04a0-11eb-224b-2b315e87bc84
 function generate_agents(N::Integer)
-	
-	return missing
+  agents = [Agent() for _ in 1:N]
+  id_infected = rand(1:N)
+  agents[id_infected].status = I
+  agents
 end
 
 # ╔═╡ 488771e2-049f-11eb-3b0a-0de260457731
@@ -442,6 +526,11 @@ struct InfectionRecovery <: AbstractInfection
 	p_infection
 	p_recovery
 end
+
+# ╔═╡ e52f0678-8d60-11eb-167b-710d0def4228
+md"""
+##### Stopped here (2021/03/25 (木) 18h54)
+"""
 
 # ╔═╡ 2d3bba2a-04a8-11eb-2c40-87794b6aeeac
 md"""
@@ -1022,7 +1111,7 @@ bigbreak
 # ╟─01341648-0403-11eb-2212-db450c299f35
 # ╟─03a85970-0403-11eb-334a-812b59c0905b
 # ╟─06f30b2a-0403-11eb-0f05-8badebe1011d
-# ╠═095cbf46-0403-11eb-0c37-35de9562cebc
+# ╟─095cbf46-0403-11eb-0c37-35de9562cebc
 # ╟─107e65a4-0403-11eb-0c14-37d8d828b469
 # ╠═12cc2940-0403-11eb-19a7-bb570de58f6f
 # ╠═15187690-0403-11eb-2dfd-fd924faa3513
@@ -1039,15 +1128,22 @@ bigbreak
 # ╟─6de37d6c-0415-11eb-1b05-85ac820016c7
 # ╠═73047bba-0416-11eb-1047-23e9c3dbde05
 # ╟─76f62d64-0403-11eb-27e2-3de58366b619
+# ╠═22375a20-8d39-11eb-366b-536368690318
+# ╠═30e98458-8d39-11eb-2915-9b40d6653f29
 # ╠═c5c7cb86-041b-11eb-3360-45463105f3c9
 # ╠═d8abd2f6-0416-11eb-1c2a-f9157d9760a7
 # ╟─771c8f0c-0403-11eb-097e-ab24d0714ad5
+# ╠═223e66f0-8d3c-11eb-3b5c-51f510b4a56a
 # ╠═105d347e-041c-11eb-2fc8-1d9e5eda2be0
+# ╠═4ef4a0a8-8d3a-11eb-1bae-633f10ac2d99
 # ╠═1ca7a8c2-041a-11eb-146a-15b8cdeaea72
+# ╠═b026c12e-8d3c-11eb-2245-3f683e20b92b
 # ╟─08e2bc64-0417-11eb-1457-21c0d18e8c51
 # ╟─77428072-0403-11eb-0068-81e3728f2ebe
 # ╠═4b3ec86c-0419-11eb-26fd-cbbfdf19afa8
 # ╟─dc784864-0430-11eb-1478-d1153e017310
+# ╠═d2bbe6a2-8d45-11eb-0422-6582da202a92
+# ╠═94ab2812-8d47-11eb-05d6-5b08efbc5cb2
 # ╠═8a28c56e-04b4-11eb-279c-3b4dfb2a9f9b
 # ╟─9374e63c-0493-11eb-0952-4b97512d7cdb
 # ╠═823364ce-041c-11eb-2467-7ffa4f751527
@@ -1057,7 +1153,8 @@ bigbreak
 # ╠═f1f89502-0494-11eb-2303-0b79d8bbd13f
 # ╠═06089d1e-0495-11eb-0ace-a7a7dc60e5b2
 # ╟─77b54c10-0403-11eb-16ad-65374d29a817
-# ╠═bb63f3cc-042f-11eb-04ff-a128aec3c378
+# ╟─bb63f3cc-042f-11eb-04ff-a128aec3c378
+# ╠═1fbceec2-8d52-11eb-01b0-d9698cce9549
 # ╟─bb8aeb58-042f-11eb-18b8-f995631df619
 # ╟─778ec25c-0403-11eb-3146-1d11c294bb1f
 # ╠═7bb8e426-0495-11eb-3a8b-cbbab61a1631
@@ -1067,24 +1164,29 @@ bigbreak
 # ╠═26f84600-041d-11eb-1856-b12a3e5c1dc7
 # ╟─271ec5f0-041d-11eb-041b-db46ec1465e0
 # ╠═7f4e121c-041d-11eb-0dff-cd0cbfdfd606
+# ╠═03ff0806-8d5b-11eb-19a9-85a3da141998
 # ╟─7f744644-041d-11eb-08a0-3719cc0adeb7
 # ╠═88c53208-041d-11eb-3b1e-31b57ba99f05
 # ╟─847d0fc2-041d-11eb-2864-79066e223b45
+# ╠═39077e26-8d5a-11eb-3c6d-750d6ff23b3f
 # ╟─860790fc-0403-11eb-2f2e-355f77dcc7af
 # ╠═ae4ac4b4-041f-11eb-14f5-1bcde35d18f2
 # ╟─ae70625a-041f-11eb-3082-0753419d6d57
 # ╠═60a8b708-04c8-11eb-37b1-3daec644ac90
 # ╟─189cae1e-0424-11eb-2666-65bf297d8bdd
 # ╠═18d308c4-0424-11eb-176d-49feec6889cf
+# ╟─36deff1c-8d5c-11eb-1ac6-eb4dd7c8ba08
 # ╟─190deebc-0424-11eb-19fe-615997093e14
 # ╠═82f2580a-04c8-11eb-1eea-bdb4e50eee3b
 # ╟─8631a536-0403-11eb-0379-bb2e56927727
 # ╠═98beb336-0425-11eb-3886-4f8cfd210288
+# ╠═1e55dcee-8d5f-11eb-389b-2f22b8d9788e
 # ╟─7c515a7a-04d5-11eb-0f36-4fcebff709d5
 # ╟─866299e8-0403-11eb-085d-2b93459cc141
 # ╠═9a837b52-0425-11eb-231f-a74405ff6e23
 # ╠═a8dd5cae-0425-11eb-119c-bfcbf832d695
 # ╟─c4a8694a-04d4-11eb-1eef-c9e037e6b21f
+# ╟─85f7bd34-8d5f-11eb-094a-17a41e25cfd2
 # ╟─8692bf42-0403-11eb-191f-b7d08895274f
 # ╠═7946d83a-04a0-11eb-224b-2b315e87bc84
 # ╠═488771e2-049f-11eb-3b0a-0de260457731
@@ -1092,6 +1194,7 @@ bigbreak
 # ╟─86d98d0a-0403-11eb-215b-c58ad721a90b
 # ╠═223933a4-042c-11eb-10d3-852229f25a35
 # ╠═1a654bdc-0421-11eb-2c38-7d35060e2565
+# ╟─e52f0678-8d60-11eb-167b-710d0def4228
 # ╟─2d3bba2a-04a8-11eb-2c40-87794b6aeeac
 # ╠═406aabea-04a5-11eb-06b8-312879457c42
 # ╟─b21475c6-04ac-11eb-1366-f3b5e967402d
