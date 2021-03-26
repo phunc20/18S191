@@ -301,7 +301,6 @@ $(html"<br>")
 $(@bind N_interactive Slider(1:100_000, show_value=true))
 """
 
-
 # ╔═╡ 1fbceec2-8d52-11eb-01b0-d9698cce9549
 frequencies_plot_with_mean(do_experiment(p_interactive, N_interactive))
 
@@ -544,38 +543,10 @@ md"""
 $(html"<span id=interactfunction></span>")
 """
 
-# ╔═╡ 406aabea-04a5-11eb-06b8-312879457c42
-function interact!(agent::Agent, source::Agent, infection::InfectionRecovery)
-  # your code here
-  if is_susceptible(agent)
-    if is_infected(source)
-      if bernoulli(infection.p_infection)
-        set_status!(agent, I)
-        set_num_infected!(source, source.num_infected + 1)
-      end
-    end
-  elseif is_infected(agent)
-    if bernoulli(infection.p_recovery)
-      set_status!(agent, R)
-    end
-  end
-end
-
 # ╔═╡ b21475c6-04ac-11eb-1366-f3b5e967402d
 md"""
 Play around with the test case below to test your function! Try changing the definitions of `agent`, `source` and `infection`. Since we are working with randomness, you might want to run the cell multiple times.
 """
-
-# ╔═╡ 9c39974c-04a5-11eb-184d-317eb542452c
-let
-	agent = Agent(S, 0)
-	source = Agent(I, 0)
-	infection = InfectionRecovery(0.5, 0.5)
-	
-	interact!(agent, source, infection)
-	
-	(agent=agent, source=source)
-end
 
 # ╔═╡ 34d13df6-8d78-11eb-38b9-896351238c51
 md"""
@@ -605,18 +576,6 @@ You should not use any global variables inside the functions: Each function must
 # ╔═╡ 8182668a-8dea-11eb-1ca3-7737777976d1
 nothing == nothing
 
-# ╔═╡ 2ade2694-0425-11eb-2fb2-390da43d9695
-function step!(agents::Vector{Agent}, infection::AbstractInfection)
-  # your code here
-  #agent, source = rand(agents, 2)
-  agent = source = nothing
-  while agent == source
-    agent, source = rand(agents, 2)
-  end
-  interact!(agent , source, infection)
-  agents
-end
-
 # ╔═╡ 279fad20-8deb-11eb-20bd-1b9b3ce3ad56
 md"""
 **(?)** I am wondering: Objects chosen by `rand()` are copies or the exact same objects taken from the
@@ -640,15 +599,6 @@ md"""
 md"""
 👉 Write a function `sweep!`. It runs `step!` $N$ times, where $N$ is the number of agents. Thus each agent acts, on average, once per sweep; a sweep is thus the unit of time in our Monte Carlo simulation.
 """
-
-# ╔═╡ 46133a74-04b1-11eb-0b46-0bc74e564680
-function sweep!(agents::Vector{Agent}, infection::AbstractInfection)
-  # your code here
-  N = length(agents)
-  for _ in 1:N
-    step!(agents, infection)
-  end
-end
 
 # ╔═╡ 95771ce2-0403-11eb-3056-f1dc3a8b7ec3
 md"""
@@ -674,60 +624,70 @@ count(false for _ in 1:10)
 # ╔═╡ 3e82de44-8e00-11eb-266d-27c18fffbb9a
 count(true for _ in 1:10)
 
-# ╔═╡ a1940588-8e02-11eb-1921-a5ce60a564f8
+# ╔═╡ bdee3320-8e07-11eb-18de-f302f945bf5e
+md"""
+Unlike in C, in Julia one shouldn't assign variables like in
+```julia
+S_counts = I_counts = R_counts = zeros(T)
+```
+
+because this will make all variables **the same** instead of creating three separate variables containing different data. Cf. the example in the next cell.
+"""
+
+# ╔═╡ 6595c50c-8e08-11eb-0d1f-273b8fc04187
 begin
-  ag = generate_agents(10)
-  SS = II = zeros(7)
-  for t in 1:7
-    SS[t], II[t] = count(is_susceptible.(ag)), count(is_infected.(ag))
-  end
-  SS, II
+  SSS = III = zeros(7)
+  # This makes SSS and III the same object, an array containing 7 elements.
+  SSS[1] = -1
+  III[2] = -2
+  SSS[3] = -3
+  SSS, III
 end
 
-# ╔═╡ 887d27fc-04bc-11eb-0ab9-eb95ef9607f8
-function simulation(N::Integer, T::Integer, infection::AbstractInfection)
-  # your code here
-  agents = generate_agents(N)
-  #S_counts = I_counts = R_counts = zeros(T)
-  S_counts, I_counts, R_counts = zeros(T), zeros(T), zeros(T)
-  for t in 1:T
-    sweep!(agents, infection)
-    #S_counts[t] = count(is_susceptible(a) for a in agents)
-    #I_counts[t] = count(is_infected(a) for a in agents)
-    #R_counts[t] = N - S_counts[t] - I_counts[t]
+# ╔═╡ a9079472-8e09-11eb-1dfb-897dcd45759a
+md"""
+```bash
+~/.../18S191/homework/homework4 ❯❯❯ gcc var_assign.c
+~/.../18S191/homework/homework4 ❯❯❯ ./a.out
+S = 0
+I = 100
+R = -99
+~/.../18S191/homework/homework4 ❯❯❯ cat var_assign.c
+#include <stdio.h>
 
-    #S_counts[t] = count(a.status == S for a in agents)
-    #I_counts[t] = count(a.status == I for a in agents)
-    #R_counts[t] = count(a.status == R for a in agents)
+int main(int argc, char **argv) {
+  int S, I, R;
+  S = I = R = 0;
+  I = 100;
+  R = -99;
+  printf("S = %d\n", S);
+  printf("I = %d\n", I);
+  printf("R = %d\n", R);
+}
+```
+"""
 
-    S_counts[t] = count(is_susceptible.(agents))
-    I_counts[t] = count(is_infected.(agents))
-    R_counts[t] = N - S_counts[t] - I_counts[t]
-  end
-  return (S=S_counts, I=I_counts, R=R_counts)
-end
-
-# ╔═╡ b92f1cec-04ae-11eb-0072-3535d1118494
-simulation(3, 20, InfectionRecovery(0.9, 0.2))
-
-# ╔═╡ 2c62b4ae-04b3-11eb-0080-a1035a7e31a2
-simulation(100, 1000, InfectionRecovery(0.005, 0.2))
+# ╔═╡ debe8080-8e09-11eb-3241-b14b43811949
+md"""
+Note that `S_counts[t] + I_counts[t] + R_counts[t]` should always sum up to `N` at all time `t`.
+"""
 
 # ╔═╡ 28db9d98-04ca-11eb-3606-9fb89fa62f36
 @bind run_basic_sir Button("Run simulation again!")
 
-# ╔═╡ c5156c72-04af-11eb-1106-b13969b036ca
-let
-	run_basic_sir
-	
-	N = 100
-	T = 1000
-	sim = simulation(N, T, InfectionRecovery(0.02, 0.002))
-	
-	result = plot(1:T, sim.S, ylim=(0, N), label="Susceptible")
-	plot!(result, 1:T, sim.I, ylim=(0, N), label="Infectious")
-	plot!(result, 1:T, sim.R, ylim=(0, N), label="Recovered")
-end
+# ╔═╡ 698e6480-8e0a-11eb-3d90-dfc2948e7a37
+md"""
+**(?)** What effect does `run_basic_sir` have in the code cell of `let ... end`? To put it more precisely, why every time when we click on the button `Run simulation again!`, the plot gets re-drawn?
+
+
+**(R)** I would explain like this: Every time we click on the button, the variable `run_basic_sir` (of type `String`) gets **refreshed** and the cell responsible for the plot thought `run_basic_sir` got updated, so the cell itself has to be updated, triggering the re-drawn of the plots.
+"""
+
+# ╔═╡ 87b88bf4-8e0a-11eb-01a9-f774d7a68b8a
+typeof(run_basic_sir)
+
+# ╔═╡ 8f461580-8e0a-11eb-1f83-d77ef39dc2df
+run_basic_sir
 
 # ╔═╡ 0a967f38-0493-11eb-0624-77e40b24d757
 md"""
@@ -772,39 +732,21 @@ md"""
 #### Exercise 3.2
 Alright! Every time that we run the simulation, we get slightly different results, because it is based on randomness. By running the simulation a number of times, you start to get an idea of the _mean behaviour_ of our model. This is the essence of a Monte Carlo method! You use computer-generated randomness to generate samples.
 
-Instead of pressing the button many times, let's have the computer repeat the simulation. In the next cells, we run your simulation `num_simulations=20` times with $N=100$, $p_\text{infection} = 0.02$, $p_\text{infection} = 0.002$ and $T = 1000$. 
+Instead of pressing the button many times, let's have the computer repeat the simulation. In the next cells, we run your simulation `num_simulations=20` times with $N=100$, $p_\text{infection} = 0.02$, $p_\text{recovery} = 0.002$ and $T = 1000$. 
 
 Every single simulation returns a named tuple with the status counts, so the result of multiple simulations will be an array of those. Have a look inside the result, `simulations`, and make sure that its structure is clear.
 """
 
-# ╔═╡ 38b1aa5a-04cf-11eb-11a2-930741fc9076
-function repeat_simulations(N, T, infection, num_simulations)
-	N = 100
-	T = 1000
-	
-	map(1:num_simulations) do _
-		simulation(N, T, infection)
-	end
-end
-
-# ╔═╡ 80c2cd88-04b1-11eb-326e-0120a39405ea
-simulations = repeat_simulations(100, 1000, InfectionRecovery(0.02, 0.002), 20)
+# ╔═╡ bf41e2cc-8e0b-11eb-17b7-bb5a9fbed04c
+md"""
+The `map() do ... end` will return an array of `num_simulations` elements, each being a return value of the function
+  `simulation(N, T, infection)`, i.e. each being a named tuple `(S, I, R)`
+"""
 
 # ╔═╡ 80e6f1e0-04b1-11eb-0d4e-475f1d80c2bb
 md"""
 In the cell below, we plot the evolution of the number of $I$ individuals as a function of time for each of the simulations on the same plot using transparency (`alpha=0.5` inside the plot command).
 """
-
-# ╔═╡ 9cd2bb00-04b1-11eb-1d83-a703907141a7
-let
-	p = plot()
-	
-	for sim in simulations
-		plot!(p, 1:1000, sim.I, alpha=.5, label=nothing)
-	end
-	
-	p
-end
 
 # ╔═╡ 95c598d4-0403-11eb-2328-0175ed564915
 md"""
@@ -813,14 +755,23 @@ md"""
 
 # ╔═╡ 843fd63c-04d0-11eb-0113-c58d346179d6
 function sir_mean_plot(simulations::Vector{<:NamedTuple})
-	# you might need T for this function, here's a trick to get it:
-	T = length(first(simulations).S)
-	
-	return missing
+  # you might need T for this function, here's a trick to get it:
+  T = length(first(simulations).S)
+  p = plot()
+  S_mean = map(1:T) do t
+    sum(sim.S[t] for sim in simulations) / length(simulations)
+  end
+  I_mean = map(1:T) do t
+    sum(sim.I[t] for sim in simulations) / length(simulations)
+  end
+  R_mean = map(1:T) do t
+    sum(sim.R[t] for sim in simulations) / length(simulations)
+  end
+  plot!(p, 1:T, S_mean, label="S mean")
+  plot!(p, 1:T, I_mean, label="I mean")
+  plot!(p, 1:T, R_mean, label="R mean")
+  return p
 end
-
-# ╔═╡ 7f635722-04d0-11eb-3209-4b603c9e843c
-sir_mean_plot(simulations)
 
 # ╔═╡ dfb99ace-04cf-11eb-0739-7d694c837d59
 md"""
@@ -828,7 +779,18 @@ md"""
 """
 
 # ╔═╡ 1c6aa208-04d1-11eb-0b87-cf429e6ff6d0
+md"""
+``p_{\text{infection}}``
+$(@bind p_infection Slider(0.01:0.01:1, show_value=true))
+$(html"<br>")
+``p_{\text{recovery}}``
+$(@bind p_recovery Slider(0.01:0.01:1, show_value=true))
+"""
 
+# ╔═╡ 254759ee-8e11-11eb-06de-d36f8d5232e4
+md"""
+##### Stopped here (2021/03/26 (金) 16h00)
+"""
 
 # ╔═╡ 95eb9f88-0403-11eb-155b-7b2d3a07cff0
 md"""
@@ -879,13 +841,172 @@ This new type `Reinfection` should also be a **subtype** of `AbstractInfection`.
 """
 
 # ╔═╡ 8dd97820-04a5-11eb-36c0-8f92d4b859a8
+struct Reinfection <: AbstractInfection
+  p_infection
+  p_recovery
+end
 
+# ╔═╡ 406aabea-04a5-11eb-06b8-312879457c42
+begin
+  function interact!(agent::Agent, source::Agent, infection::InfectionRecovery)
+    # your code here
+    if is_susceptible(agent)
+      if is_infected(source)
+        if bernoulli(infection.p_infection)
+          set_status!(agent, I)
+          set_num_infected!(source, source.num_infected + 1)
+        end
+      end
+    elseif is_infected(agent)
+      if bernoulli(infection.p_recovery)
+        set_status!(agent, R)
+      end
+    end
+  end
+
+  function interact!(agent::Agent, source::Agent, infection::Reinfection)
+    # your code here
+    if is_susceptible(agent)
+      if is_infected(source)
+        if bernoulli(infection.p_infection)
+          set_status!(agent, I)
+          set_num_infected!(source, source.num_infected + 1)
+        end
+      end
+    elseif is_infected(agent)
+      if bernoulli(infection.p_recovery)
+        set_status!(agent, S)
+      end
+    end
+  end
+end
+
+# ╔═╡ 9c39974c-04a5-11eb-184d-317eb542452c
+let
+	agent = Agent(S, 0)
+	source = Agent(I, 0)
+	infection = InfectionRecovery(0.5, 0.5)
+	
+	interact!(agent, source, infection)
+	
+	(agent=agent, source=source)
+end
+
+# ╔═╡ 2ade2694-0425-11eb-2fb2-390da43d9695
+function step!(agents::Vector{Agent}, infection::AbstractInfection)
+  # your code here
+  #agent, source = rand(agents, 2)
+  agent = source = nothing
+  while agent == source
+    agent, source = rand(agents, 2)
+  end
+  interact!(agent , source, infection)
+  agents
+end
+
+# ╔═╡ 46133a74-04b1-11eb-0b46-0bc74e564680
+function sweep!(agents::Vector{Agent}, infection::AbstractInfection)
+  # your code here
+  N = length(agents)
+  for _ in 1:N
+    step!(agents, infection)
+  end
+end
+
+# ╔═╡ 887d27fc-04bc-11eb-0ab9-eb95ef9607f8
+function simulation(N::Integer, T::Integer, infection::AbstractInfection)
+  # your code here
+  agents = generate_agents(N)
+  #S_counts = I_counts = R_counts = zeros(T)  # This causes a problem.
+  S_counts, I_counts, R_counts = zeros(T), zeros(T), zeros(T)
+  for t in 1:T
+    sweep!(agents, infection)
+	# The following three ways are equiv.
+
+    #S_counts[t] = count(is_susceptible(a) for a in agents)
+    #I_counts[t] = count(is_infected(a) for a in agents)
+    #R_counts[t] = N - S_counts[t] - I_counts[t]
+
+    #S_counts[t] = count(a.status == S for a in agents)
+    #I_counts[t] = count(a.status == I for a in agents)
+    #R_counts[t] = count(a.status == R for a in agents)
+
+    S_counts[t] = count(is_susceptible.(agents))
+    I_counts[t] = count(is_infected.(agents))
+    R_counts[t] = N - S_counts[t] - I_counts[t]
+  end
+  return (S=S_counts, I=I_counts, R=R_counts)
+end
+
+# ╔═╡ b92f1cec-04ae-11eb-0072-3535d1118494
+simulation(3, 20, InfectionRecovery(0.9, 0.2))
+
+# ╔═╡ 2c62b4ae-04b3-11eb-0080-a1035a7e31a2
+simulation(100, 1000, InfectionRecovery(0.005, 0.2))
+
+# ╔═╡ c5156c72-04af-11eb-1106-b13969b036ca
+let
+	run_basic_sir
+	
+	N = 100
+	T = 1000
+	sim = simulation(N, T, InfectionRecovery(0.02, 0.002))
+	
+	result = plot(1:T, sim.S, ylim=(0, N), label="Susceptible")
+	plot!(result, 1:T, sim.I, ylim=(0, N), label="Infectious")
+	plot!(result, 1:T, sim.R, ylim=(0, N), label="Recovered")
+end
+
+# ╔═╡ 38b1aa5a-04cf-11eb-11a2-930741fc9076
+function repeat_simulations(N, T, infection, num_simulations)
+	N = 100
+	T = 1000
+	
+	map(1:num_simulations) do _
+		simulation(N, T, infection)
+	end
+end
+
+# ╔═╡ 80c2cd88-04b1-11eb-326e-0120a39405ea
+simulations = repeat_simulations(100, 1000, InfectionRecovery(0.02, 0.002), 20)
+
+# ╔═╡ 9cd2bb00-04b1-11eb-1d83-a703907141a7
+let
+	p = plot()
+	
+	mean_I = zeros(1000)
+	for sim in simulations
+		plot!(p, 1:1000, sim.I, alpha=.5, label=nothing)
+		mean_I += sim.I
+	end
+	mean_I = mean_I ./ length(simulations)
+	plot!(p, 1:1000, mean_I, lw=3, label="mean")
+	
+	p
+end
+
+# ╔═╡ 7f635722-04d0-11eb-3209-4b603c9e843c
+sir_mean_plot(simulations)
+
+# ╔═╡ 48c5e814-8e10-11eb-1ff6-2917967477ee
+begin
+  simulations2 = repeat_simulations(100, 1000, InfectionRecovery(p_infection, p_recovery), 20)
+  sir_mean_plot(simulations2)
+end
 
 # ╔═╡ 99ef7b2a-0403-11eb-08ef-e1023cd151ae
 md"""
 👉 Make a *new method* for the `interact!` function that accepts the new infection type as argument, reusing as much functionality as possible from the previous version. 
 
 Write it in the same cell as [our previous `interact!` method](#interactfunction), and use a `begin` block to group the two definitions together.
+
+"""
+
+# ╔═╡ 28df20ce-8e12-11eb-25d9-31eb8282f971
+md"""
+**Rmk.** Note that this notebook's methods have been **carefully designed**
+- only the method `interact!()` has arg of type `::InfectionRecovery`
+- all other methods have at most args of type `::AbstractInfection`
 
 """
 
@@ -1308,18 +1429,25 @@ bigbreak
 # ╠═c60ed03e-8dfe-11eb-3f33-5957bdedbe14
 # ╠═37b49972-8e00-11eb-1a65-31b0c72fbbe7
 # ╠═3e82de44-8e00-11eb-266d-27c18fffbb9a
-# ╠═a1940588-8e02-11eb-1921-a5ce60a564f8
+# ╟─bdee3320-8e07-11eb-18de-f302f945bf5e
+# ╠═6595c50c-8e08-11eb-0d1f-273b8fc04187
+# ╟─a9079472-8e09-11eb-1dfb-897dcd45759a
 # ╠═887d27fc-04bc-11eb-0ab9-eb95ef9607f8
 # ╠═b92f1cec-04ae-11eb-0072-3535d1118494
+# ╟─debe8080-8e09-11eb-3241-b14b43811949
 # ╠═2c62b4ae-04b3-11eb-0080-a1035a7e31a2
 # ╠═c5156c72-04af-11eb-1106-b13969b036ca
 # ╠═28db9d98-04ca-11eb-3606-9fb89fa62f36
+# ╟─698e6480-8e0a-11eb-3d90-dfc2948e7a37
+# ╠═87b88bf4-8e0a-11eb-01a9-f774d7a68b8a
+# ╠═8f461580-8e0a-11eb-1f83-d77ef39dc2df
 # ╟─0a967f38-0493-11eb-0624-77e40b24d757
 # ╠═53a45836-8d81-11eb-09f6-0995a28201e1
 # ╠═5cd0ef82-8d81-11eb-1e93-d17066640f5e
 # ╠═642ef49c-8d81-11eb-25d3-b5d7b32dec98
 # ╟─bf6fd176-04cc-11eb-008a-2fb6ff70a9cb
 # ╠═38b1aa5a-04cf-11eb-11a2-930741fc9076
+# ╟─bf41e2cc-8e0b-11eb-17b7-bb5a9fbed04c
 # ╠═80c2cd88-04b1-11eb-326e-0120a39405ea
 # ╟─80e6f1e0-04b1-11eb-0d4e-475f1d80c2bb
 # ╠═9cd2bb00-04b1-11eb-1d83-a703907141a7
@@ -1328,7 +1456,9 @@ bigbreak
 # ╠═843fd63c-04d0-11eb-0113-c58d346179d6
 # ╠═7f635722-04d0-11eb-3209-4b603c9e843c
 # ╟─dfb99ace-04cf-11eb-0739-7d694c837d59
-# ╠═1c6aa208-04d1-11eb-0b87-cf429e6ff6d0
+# ╟─1c6aa208-04d1-11eb-0b87-cf429e6ff6d0
+# ╠═48c5e814-8e10-11eb-1ff6-2917967477ee
+# ╟─254759ee-8e11-11eb-06de-d36f8d5232e4
 # ╟─95eb9f88-0403-11eb-155b-7b2d3a07cff0
 # ╠═287ee7aa-0435-11eb-0ca3-951dbbe69404
 # ╟─9611ca24-0403-11eb-3582-b7e3bb243e62
@@ -1338,6 +1468,7 @@ bigbreak
 # ╟─61c00724-0403-11eb-228d-17c11670e5d1
 # ╠═8dd97820-04a5-11eb-36c0-8f92d4b859a8
 # ╟─99ef7b2a-0403-11eb-08ef-e1023cd151ae
+# ╟─28df20ce-8e12-11eb-25d9-31eb8282f971
 # ╟─9a13b17c-0403-11eb-024f-9b37e95e211b
 # ╠═1ac4b33a-0435-11eb-36f8-8f3f81ae7844
 # ╟─9a377b32-0403-11eb-2799-e7e59caa6a45
