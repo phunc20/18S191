@@ -546,7 +546,19 @@ $(html"<span id=interactfunction></span>")
 
 # ╔═╡ 406aabea-04a5-11eb-06b8-312879457c42
 function interact!(agent::Agent, source::Agent, infection::InfectionRecovery)
-	# your code here
+  # your code here
+  if is_susceptible(agent)
+    if is_infected(source)
+      if bernoulli(infection.p_infection)
+        set_status!(agent, I)
+        set_num_infected!(source, source.num_infected + 1)
+      end
+    end
+  elseif is_infected(agent)
+    if bernoulli(infection.p_recovery)
+      set_status!(agent, R)
+    end
+  end
 end
 
 # ╔═╡ b21475c6-04ac-11eb-1366-f3b5e967402d
@@ -558,12 +570,17 @@ Play around with the test case below to test your function! Try changing the def
 let
 	agent = Agent(S, 0)
 	source = Agent(I, 0)
-	infection = InfectionRecovery(0.9, 0.5)
+	infection = InfectionRecovery(0.5, 0.5)
 	
 	interact!(agent, source, infection)
 	
 	(agent=agent, source=source)
 end
+
+# ╔═╡ 34d13df6-8d78-11eb-38b9-896351238c51
+md"""
+##### Stopped here (2021/03/25 (木) 21h54)
+"""
 
 # ╔═╡ 619c8a10-0403-11eb-2e89-8b0974fb01d0
 md"""
@@ -585,10 +602,39 @@ You should not use any global variables inside the functions: Each function must
 
 """
 
+# ╔═╡ 8182668a-8dea-11eb-1ca3-7737777976d1
+nothing == nothing
+
 # ╔═╡ 2ade2694-0425-11eb-2fb2-390da43d9695
 function step!(agents::Vector{Agent}, infection::AbstractInfection)
-	# your code here
+  # your code here
+  #agent, source = rand(agents, 2)
+  agent = source = nothing
+  while agent == source
+    agent, source = rand(agents, 2)
+  end
+  interact!(agent , source, infection)
+  agents
 end
+
+# ╔═╡ 279fad20-8deb-11eb-20bd-1b9b3ce3ad56
+md"""
+**(?)** I am wondering: Objects chosen by `rand()` are copies or the exact same objects taken from the
+collection? Let's use the next cell to experiment.
+"""
+
+# ╔═╡ afa256aa-8deb-11eb-0d42-4989175ddcac
+begin
+  three_agents = [Agent(), Agent(I, 10), Agent(R, 100)]
+  some_agent = rand(three_agents)
+  some_agent.num_infected = -7
+  three_agents
+end
+
+# ╔═╡ 95c5947c-8df5-11eb-1791-ff884ff1b0ee
+md"""
+**(R)** `rand()` extracts the exact same objects in the collection.
+"""
 
 # ╔═╡ 955321de-0403-11eb-04ce-fb1670dfbb9e
 md"""
@@ -597,7 +643,11 @@ md"""
 
 # ╔═╡ 46133a74-04b1-11eb-0b46-0bc74e564680
 function sweep!(agents::Vector{Agent}, infection::AbstractInfection)
-	# your code here
+  # your code here
+  N = length(agents)
+  for _ in 1:N
+    step!(agents, infection)
+  end
 end
 
 # ╔═╡ 95771ce2-0403-11eb-3056-f1dc3a8b7ec3
@@ -615,12 +665,46 @@ You've seen an example of named tuples before: the `student` variable at the top
 _Feel free to store the counts in a different way, as long as the return type is the same._
 """
 
+# ╔═╡ c60ed03e-8dfe-11eb-3f33-5957bdedbe14
+count([false, true, false])
+
+# ╔═╡ 37b49972-8e00-11eb-1a65-31b0c72fbbe7
+count(false for _ in 1:10)
+
+# ╔═╡ 3e82de44-8e00-11eb-266d-27c18fffbb9a
+count(true for _ in 1:10)
+
+# ╔═╡ a1940588-8e02-11eb-1921-a5ce60a564f8
+begin
+  ag = generate_agents(10)
+  SS = II = zeros(7)
+  for t in 1:7
+    SS[t], II[t] = count(is_susceptible.(ag)), count(is_infected.(ag))
+  end
+  SS, II
+end
+
 # ╔═╡ 887d27fc-04bc-11eb-0ab9-eb95ef9607f8
 function simulation(N::Integer, T::Integer, infection::AbstractInfection)
+  # your code here
+  agents = generate_agents(N)
+  #S_counts = I_counts = R_counts = zeros(T)
+  S_counts, I_counts, R_counts = zeros(T), zeros(T), zeros(T)
+  for t in 1:T
+    sweep!(agents, infection)
+    #S_counts[t] = count(is_susceptible(a) for a in agents)
+    #I_counts[t] = count(is_infected(a) for a in agents)
+    #R_counts[t] = N - S_counts[t] - I_counts[t]
 
-	# your code here
-	
-	return (S=missing, I=missing, R=missing)
+    #S_counts[t] = count(a.status == S for a in agents)
+    #I_counts[t] = count(a.status == I for a in agents)
+    #R_counts[t] = count(a.status == R for a in agents)
+
+    S_counts[t] = count(is_susceptible.(agents))
+    I_counts[t] = count(is_infected.(agents))
+    R_counts[t] = N - S_counts[t] - I_counts[t]
+  end
+  return (S=S_counts, I=I_counts, R=R_counts)
 end
 
 # ╔═╡ b92f1cec-04ae-11eb-0072-3535d1118494
@@ -663,7 +747,7 @@ $(html"<span id=function_begin_let></span>")
 > We use it in this notebook when we want multiple expressions to always run together.
 > 
 > ###### let
-> **`let`** also groups multiple expressions together into one, but variables defined inside of it are **local**: they don't affect code outside of the block. So like `begin`, it is just a block of code, but like `function`, it has a local variable scope.
+> **`let`** also groups multiple expressions together into one, but variables defined inside it are **local**: they don't affect code outside of the block. So like `begin`, it is just a block of code, but like `function`, it has a local variable scope.
 > 
 > We use it when we want to define some local (temporary) variables to produce a complicated result, without interfering with other cells. Pluto allows only one definition per _global_ variable of the same name, but you can define _local_ variables with the same names whenever you wish!
 > 
@@ -673,6 +757,15 @@ $(html"<span id=function_begin_let></span>")
 >     
 >     returns **one object**: the object `nothing` — try it out!
 """
+
+# ╔═╡ 53a45836-8d81-11eb-09f6-0995a28201e1
+g(x) = return
+
+# ╔═╡ 5cd0ef82-8d81-11eb-1e93-d17066640f5e
+typeof(g(10))
+
+# ╔═╡ 642ef49c-8d81-11eb-25d3-b5d7b32dec98
+g('a')
 
 # ╔═╡ bf6fd176-04cc-11eb-008a-2fb6ff70a9cb
 md"""
@@ -1202,17 +1295,29 @@ bigbreak
 # ╟─759bc42e-04ab-11eb-0ab1-b12e008c02a9
 # ╟─1491a078-04aa-11eb-0106-19a3cf1e94b0
 # ╟─f8e05d94-04ac-11eb-26d4-6f1d2c5ed272
+# ╟─34d13df6-8d78-11eb-38b9-896351238c51
 # ╟─619c8a10-0403-11eb-2e89-8b0974fb01d0
+# ╠═8182668a-8dea-11eb-1ca3-7737777976d1
 # ╠═2ade2694-0425-11eb-2fb2-390da43d9695
+# ╟─279fad20-8deb-11eb-20bd-1b9b3ce3ad56
+# ╠═afa256aa-8deb-11eb-0d42-4989175ddcac
+# ╟─95c5947c-8df5-11eb-1791-ff884ff1b0ee
 # ╟─955321de-0403-11eb-04ce-fb1670dfbb9e
 # ╠═46133a74-04b1-11eb-0b46-0bc74e564680
 # ╟─95771ce2-0403-11eb-3056-f1dc3a8b7ec3
+# ╠═c60ed03e-8dfe-11eb-3f33-5957bdedbe14
+# ╠═37b49972-8e00-11eb-1a65-31b0c72fbbe7
+# ╠═3e82de44-8e00-11eb-266d-27c18fffbb9a
+# ╠═a1940588-8e02-11eb-1921-a5ce60a564f8
 # ╠═887d27fc-04bc-11eb-0ab9-eb95ef9607f8
 # ╠═b92f1cec-04ae-11eb-0072-3535d1118494
 # ╠═2c62b4ae-04b3-11eb-0080-a1035a7e31a2
 # ╠═c5156c72-04af-11eb-1106-b13969b036ca
-# ╟─28db9d98-04ca-11eb-3606-9fb89fa62f36
+# ╠═28db9d98-04ca-11eb-3606-9fb89fa62f36
 # ╟─0a967f38-0493-11eb-0624-77e40b24d757
+# ╠═53a45836-8d81-11eb-09f6-0995a28201e1
+# ╠═5cd0ef82-8d81-11eb-1e93-d17066640f5e
+# ╠═642ef49c-8d81-11eb-25d3-b5d7b32dec98
 # ╟─bf6fd176-04cc-11eb-008a-2fb6ff70a9cb
 # ╠═38b1aa5a-04cf-11eb-11a2-930741fc9076
 # ╠═80c2cd88-04b1-11eb-326e-0120a39405ea
@@ -1246,7 +1351,7 @@ bigbreak
 # ╟─461586dc-0414-11eb-00f3-4984b57bfac5
 # ╟─43e6e856-0414-11eb-19ca-07358aa8b667
 # ╟─41cefa68-0414-11eb-3bad-6530360d6f68
-# ╟─3f5e0af8-0414-11eb-34a7-a71e7aaf6443
-# ╟─3d88c056-0414-11eb-0025-05d3aff1588b
-# ╟─3c0528a0-0414-11eb-2f68-a5657ab9e73d
+# ╠═3f5e0af8-0414-11eb-34a7-a71e7aaf6443
+# ╠═3d88c056-0414-11eb-0025-05d3aff1588b
+# ╠═3c0528a0-0414-11eb-2f68-a5657ab9e73d
 # ╟─39dffa3c-0414-11eb-0197-e72b299e9c63
