@@ -646,6 +646,7 @@ end
 
 # ╔═╡ a9079472-8e09-11eb-1dfb-897dcd45759a
 md"""
+C is diff from Julia
 ```bash
 ~/.../18S191/homework/homework4 ❯❯❯ gcc var_assign.c
 ~/.../18S191/homework/homework4 ❯❯❯ ./a.out
@@ -664,6 +665,40 @@ int main(int argc, char **argv) {
   printf("I = %d\n", I);
   printf("R = %d\n", R);
 }
+```
+
+`numpy` is similar to Julia.
+```ipython
+In [1]: import numpy as np
+
+In [2]: S = I = np.zeros(7)
+
+In [3]: S[0] = 100
+
+In [4]: S
+Out[4]: array([100.,   0.,   0.,   0.,   0.,   0.,   0.])
+
+In [5]: I
+Out[5]: array([100.,   0.,   0.,   0.,   0.,   0.,   0.])
+
+In [6]: I[-1] = -99
+
+In [7]: S
+Out[7]: array([100.,   0.,   0.,   0.,   0.,   0., -99.])
+
+In [8]: I
+Out[8]: array([100.,   0.,   0.,   0.,   0.,   0., -99.])
+
+In [9]: i = s = -77
+
+In [10]: i = 10
+
+In [11]: s
+Out[11]: -77
+
+In [12]: S is I
+Out[12]: True
+
 ```
 """
 
