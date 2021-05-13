@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.0
+# v0.14.5
 
 using Markdown
 using InteractiveUtils
@@ -12,6 +12,45 @@ macro bind(def, element)
         el
     end
 end
+
+# ╔═╡ 6b473b2d-4326-46b4-af38-07b61de287fc
+begin
+	import Pkg
+	Pkg.activate(mktempdir())
+	Pkg.add([
+		Pkg.PackageSpec(name="ImageIO", version="0.5"),
+		Pkg.PackageSpec(name="ImageShow", version="0.2"),
+		Pkg.PackageSpec(name="FileIO", version="1.6"),
+		Pkg.PackageSpec(name="PNGFiles", version="0.3.6"),
+		Pkg.PackageSpec(name="Colors", version="0.12"),
+		Pkg.PackageSpec(name="ColorVectorSpace", version="0.8"),
+
+		Pkg.PackageSpec(name="PlutoUI", version="0.7"),
+		Pkg.PackageSpec(name="HypertextLiteral", version="0.5"),
+		Pkg.PackageSpec(name="ForwardDiff", version="0.10"),
+		Pkg.PackageSpec(name="NonlinearSolve", version="0.3"),
+		Pkg.PackageSpec(name="StaticArrays"),
+	])
+
+	using PlutoUI 
+	using Colors, ColorVectorSpace, ImageShow, FileIO
+	using PlutoUI
+	using HypertextLiteral
+	using LinearAlgebra
+	using ForwardDiff
+	using NonlinearSolve
+	using StaticArrays
+end
+
+# ╔═╡ 230cba36-9d0a-4726-9e55-7df2c6743968
+filter!(LOAD_PATH) do path
+	path != "@v#.#"
+end;
+
+# ╔═╡ 2e8c4a48-d535-44ac-a1f1-4cb26c4aece6
+filter!(LOAD_PATH) do path
+	path != "@v#.#"
+end;
 
 # ╔═╡ 972b2230-7634-11eb-028d-df7fc722ec70
 html"""
@@ -74,50 +113,16 @@ md"""
 _When running this notebook for the first time, this could take up to 15 minutes. Hang in there!_
 """
 
-# ╔═╡ 6b473b2d-4326-46b4-af38-07b61de287fc
-begin
-	import Pkg
-	Pkg.activate(mktempdir())
-	Pkg.add([
-		Pkg.PackageSpec(name="ImageIO", version="0.5"),
-		Pkg.PackageSpec(name="ImageShow", version="0.2"),
-		Pkg.PackageSpec(name="FileIO", version="1.6"),
-		Pkg.PackageSpec(name="PNGFiles", version="0.3.6"),
-		Pkg.PackageSpec(name="Colors", version="0.12"),
-		Pkg.PackageSpec(name="ColorVectorSpace", version="0.8"),
-
-		Pkg.PackageSpec(name="PlutoUI", version="0.7"),
-		Pkg.PackageSpec(name="HypertextLiteral", version="0.5"),
-		Pkg.PackageSpec(name="ForwardDiff", version="0.10"),
-		Pkg.PackageSpec(name="NonlinearSolve", version="0.3"),
-		Pkg.PackageSpec(name="StaticArrays"),
-	])
-
-	using PlutoUI 
-	using Colors, ColorVectorSpace, ImageShow, FileIO
-	using PlutoUI
-	using HypertextLiteral
-	using LinearAlgebra
-	using ForwardDiff
-	using NonlinearSolve
-	using StaticArrays
-end
-
-# ╔═╡ 230cba36-9d0a-4726-9e55-7df2c6743968
-filter!(LOAD_PATH) do path
-	path != "@v#.#"
-end;
-
-# ╔═╡ 96766502-7a06-11eb-00cc-29849773dbcf
-# img_original = load(download(corgis_url));
-img_original = load(download(longcorgi_url));
-# img_original = load(download(theteam_url));
-
 # ╔═╡ 890d30b9-2cd0-4d3a-99f6-f7d3d7858fda
 corgis_url = "https://user-images.githubusercontent.com/6933510/108605549-fb28e180-73b4-11eb-8520-7e29db0cc965.png"
 
 # ╔═╡ 85fba8fb-a9ea-444d-831b-ec6489b58b4f
 longcorgi_url = "https://user-images.githubusercontent.com/6933510/110868198-713faa80-82c8-11eb-8264-d69df4509f49.png"
+
+# ╔═╡ 96766502-7a06-11eb-00cc-29849773dbcf
+# img_original = load(download(corgis_url));
+img_original = load(download(longcorgi_url));
+# img_original = load(download(theteam_url));
 
 # ╔═╡ 06beabc3-2aa7-4e78-9bae-dc4b37251aa2
 theteam_url = "https://news.mit.edu/sites/default/files/styles/news_article__image_gallery/public/images/202004/edelman%2520philip%2520sanders.png?itok=ZcYu9NFeg"
@@ -132,6 +137,55 @@ After you select your image, we suggest moving this line above just above the to
 # ╔═╡ e0b657ce-7a03-11eb-1f9d-f32168cb5394
 md"""
 #  The fun stuff: playing with transforms
+"""
+
+# ╔═╡ 23ade8ee-7a09-11eb-0e40-296c6b831d74
+md"""
+Grab a [linear](#a0afe3ae-76b9-11eb-2301-cde7260ddd7f) or [nonlinear](#a290d5e2-7a02-11eb-37db-41bf86b1f3b3) transform, or make up your own!
+"""
+
+# ╔═╡ a0a9db4e-32ff-4b22-b687-b9de94d3af9e
+md"""
+- `T⁻¹` is typeset by `T\^-<TAB>\^1<TAB>`
+
+"""
+
+# ╔═╡ fe6e292f-ef98-4ca4-9469-4a62cc73bfb0
+
+
+# ╔═╡ 2efaa336-7630-11eb-0c17-a7d4a0141dac
+md"""
+zoom = $(@bind  z Scrubbable(.1:.1:3,  default=1))
+"""
+
+# ╔═╡ 7f28ac40-7914-11eb-1403-b7bec34aeb94
+md"""
+pan = [$(@bind panx Scrubbable(-1:.1:1, default=0)), 
+$(@bind pany Scrubbable(-1:.1:1, default=0)) ]
+"""
+
+# ╔═╡ ce55beee-7643-11eb-04bc-b517703facff
+md"""
+α= $(@bind α Slider(-30:.1:30, show_value=true, default=0))
+β= $(@bind β Slider(-10:.1:10, show_value=true, default = 5))
+h= $(@bind h Slider(.1:.1:10, show_value=true, default = 5))
+"""
+
+# ╔═╡ 5d33f6ea-7e9c-11eb-2fb3-dbb7cb07c60c
+md"""
+pixels = $(@bind pixels Slider(1:1000, default=800, show_value=true))
+"""
+
+# ╔═╡ 45dccdec-7912-11eb-01b4-a97e30344f39
+md"""
+Show grid lines $(@bind show_grid CheckBox(default=true))
+ngrid = $(@bind ngrid Slider(5:5:20, show_value=true, default = 10))
+"""
+
+# ╔═╡ d2fb356e-7f32-11eb-177d-4f47d6c9e59b
+md"""
+Circular Frame $(@bind circular CheckBox(default=true))
+radius = $(@bind r Slider(.1:.1:1, show_value=true, default = 1))
 """
 
 # ╔═╡ 005ca75a-7622-11eb-2ba4-9f450e71df1f
@@ -158,86 +212,6 @@ $(@bind d Scrubbable(range; default=1.0))
 	
 """
 end
-
-# ╔═╡ 23ade8ee-7a09-11eb-0e40-296c6b831d74
-md"""
-Grab a [linear](#a0afe3ae-76b9-11eb-2301-cde7260ddd7f) or [nonlinear](#a290d5e2-7a02-11eb-37db-41bf86b1f3b3) transform, or make up your own!
-"""
-
-# ╔═╡ 58a30e54-7a08-11eb-1c57-dfef0000255f
-# T⁻¹ = id
-#  T⁻¹ = rotate(α)
-  T⁻¹ = shear(α)
-#   T⁻¹ = lin(A) # uses the scrubbable 
-#   T⁻¹ = shear(α) ∘ shear(-α)
- # T⁻¹ = nonlin_shear(α)  
- #   T⁻¹ =   inverse(nonlin_shear(α))
-#    T⁻¹ =  nonlin_shear(-α)
-#  T⁻¹ =  xy 
-# T⁻¹ = warp(α)
-# T⁻¹ = ((x,y),)-> (x+α*y^2,y+α*x^2) # may be non-invertible
-
-#T⁻¹ = ((x,y),)-> (x,y^2)  
-# T⁻¹  = flipy ∘ ((x,y),) ->  ( (β*x - α*y)/(β - y)  , -h*y/ (β - y)   ) 
-
-# ╔═╡ 2efaa336-7630-11eb-0c17-a7d4a0141dac
-md"""
-zoom = $(@bind  z Scrubbable(.1:.1:3,  default=1))
-"""
-
-# ╔═╡ 7f28ac40-7914-11eb-1403-b7bec34aeb94
-md"""
-pan = [$(@bind panx Scrubbable(-1:.1:1, default=0)), 
-$(@bind pany Scrubbable(-1:.1:1, default=0)) ]
-"""
-
-# ╔═╡ ce55beee-7643-11eb-04bc-b517703facff
-md"""
-α= $(@bind α Slider(-30:.1:30, show_value=true, default=0))
-β= $(@bind β Slider(-10:.1:10, show_value=true, default = 5))
-h= $(@bind h Slider(.1:.1:10, show_value=true, default = 5))
-"""
-
-# ╔═╡ b76a5bd6-802f-11eb-0951-1f1092dee8de
-1+1
-
-# ╔═╡ 5d33f6ea-7e9c-11eb-2fb3-dbb7cb07c60c
-md"""
-pixels = $(@bind pixels Slider(1:1000, default=800, show_value=true))
-"""
-
-# ╔═╡ 45dccdec-7912-11eb-01b4-a97e30344f39
-md"""
-Show grid lines $(@bind show_grid CheckBox(default=true))
-ngrid = $(@bind ngrid Slider(5:5:20, show_value=true, default = 10))
-"""
-
-# ╔═╡ d2fb356e-7f32-11eb-177d-4f47d6c9e59b
-md"""
-Circular Frame $(@bind circular CheckBox(default=true))
-radius = $(@bind r Slider(.1:.1:1, show_value=true, default = 1))
-"""
-
-# ╔═╡ ca28189e-7e9a-11eb-21d6-bd819f3e0d3a
-begin
-		[			    
-			begin
-			
-			 x,y = transform_ij_to_xy(i,j, pixels)
-			
-			X,Y = ( translate(-panx,-pany)  )([x,y])
-			 X,Y = ( T⁻¹∘scale(1/z)∘translate(-panx,-pany) )([x,y])
-			 i,j = transform_xy_to_ij(img,X,Y)
-			 getpixel(img,i,j; circular=circular, r=r)
-			end	 
-		
-			for i = 1:pixels, j = 1:pixels
-		]	
-end
-
-# ╔═╡ ccea7244-7f2f-11eb-1b7b-b9b8473a8c74
-transform_xy_to_ij(img,0.0,0.0)
-
 
 # ╔═╡ 55b5fc92-7a76-11eb-3fba-854c65eb87f9
 md"""
@@ -306,6 +280,12 @@ The forms with the `->` are anonymous functions.  (They are still
 considered anonymous, even though we then name them `f`.)
 """
 
+# ╔═╡ 06b9fc29-aca8-442f-937a-88d26cd49a1b
+typeof((1,2))
+
+# ╔═╡ b30e6893-4b4f-49bc-8a84-77620426067b
+typeof(((1,2),))
+
 # ╔═╡ 28ef451c-7aa1-11eb-340c-ab3a1193a3c4
 md"""
 ## Functions with parameters
@@ -328,6 +308,12 @@ md"""
 Here are a few useful linear transformations:
 """
 
+# ╔═╡ b43fbc6c-7aa9-4834-82ce-5d7ff9d088f7
+md"""
+- `SA`?
+
+"""
+
 # ╔═╡ d364f91a-76b9-11eb-1807-75e733940d53
 begin
 	 id((x,y)) = SA[x, y]
@@ -342,6 +328,22 @@ begin
 	 rotate(θ) = ((x, y),) -> SA[cos(θ)*x + sin(θ)*y, -sin(θ)*x + cos(θ)*y]
 	 shear(α)  = ((x, y),) -> SA[x + α*y, y]
 end
+
+# ╔═╡ 58a30e54-7a08-11eb-1c57-dfef0000255f
+# T⁻¹ = id
+#  T⁻¹ = rotate(α)
+#  T⁻¹ = shear(α)
+#   T⁻¹ = lin(A) # uses the scrubbable 
+   T⁻¹ = shear(α) ∘ shear(-α)
+#   T⁻¹ = nonlin_shear(α)  
+ #   T⁻¹ =   inverse(nonlin_shear(α))
+#    T⁻¹ =  nonlin_shear(-α)
+#  T⁻¹ =  xy 
+# T⁻¹ = warp(α)
+# T⁻¹ = ((x,y),)-> (x+α*y^2,y+α*x^2) # may be non-invertible
+
+#T⁻¹ = ((x,y),)-> (x,y^2)  
+# T⁻¹  = flipy ∘ ((x,y),) ->  ( (β*x - α*y)/(β - y)  , -h*y/ (β - y)   ) 
 
 # ╔═╡ 080d87e0-7aa2-11eb-18f5-2fb6a7a5bcb4
 md"""
@@ -631,52 +633,15 @@ md"""
 `lin(P*Q)`
 """
 
-# ╔═╡ da73d9f6-7a8d-11eb-2e6f-1b819bbb0185
-begin
-		[			    
-			begin
-			 x,y = transform_ij_to_xy(i,j, test_pixels)
-			 X,Y =  T₁([x,y])
-			 i,j = transform_xy_to_ij(test_img,X,Y)
-			 getpixel(test_img,i,j)
-			end	 
-		
-			for i = 1:test_pixels, j = 1:test_pixels
-		]	
-end
-
 # ╔═╡ 620ee7d8-7a8f-11eb-3888-356c27a2d591
 md"""
 `lin(P)∘lin(Q)`
 """
 
-# ╔═╡ 30f522a0-7a8e-11eb-2181-8313760778ef
-begin
-		[			    
-			begin
-			 x,y = transform_ij_to_xy(i,j, test_pixels)
-			 X,Y =  T₂([x,y])
-			 i,j = transform_xy_to_ij(test_img,X,Y)
-			 getpixel(test_img,i,j)
-			end	 
-		
-			for i = 1:test_pixels, j = 1:test_pixels
-		]	
-end
-
 # ╔═╡ 04da7710-7a91-11eb-02a1-0b6e889150a2
 md"""
 # Coordinate transformations vs object transformations
 """
-
-# ╔═╡ c2e0e032-7c4c-11eb-2b2a-27fe69c42a01
-img;
-
-# ╔═╡ c662e3d8-7c4c-11eb-0dcf-f9da2bd14baf
-size(img)
-
-# ╔═╡ d0e9a1e8-7c4c-11eb-056c-aff283c49c31
-img[50,56]
 
 # ╔═╡ 155cd218-7a91-11eb-0b4c-bd028507e925
 md"""
@@ -696,60 +661,6 @@ of as existing in the entire plane.
 
 # ╔═╡ 7c68c7b6-7a9e-11eb-3f7f-99bb10aedd95
 Resource("https://raw.githubusercontent.com/mitmath/18S191/Spring21/notebooks/week3/coord_transform.png")
-
-# ╔═╡ 7d0096ad-d89a-4ade-9679-6ee95f7d2044
-begin
-	function transform_xy_to_ij(img::AbstractMatrix, x::Float64, y::Float64)
-	# convert coordinate system xy to ij 
-	# center image, and use "white" when out of the boundary
-		
-		rows, cols = size(img)
-		m = max(cols, rows)	
-		
-	    # function to take xy to ij
-		xy_to_ij =  translate(rows/2, cols/2) ∘ swap ∘ flipy ∘ scale(m/2)
-		
-		# apply the function and "snap to grid"
-		i,j = floor.(Int, xy_to_ij((x, y))) 
-	
-	end
-	
-	function getpixel(img,i::Int,j::Int; circular::Bool=false, r::Real=200)   
-		#  grab image color or place default
-		rows,cols = size(img)
-		m = max(cols,rows)
-		if circular
-			c = (i-rows/2)^2 + (j-cols/2)^2 ≤ r*m^2/4
-		else
-			c = true
-		end
-		
-		if 1 < i ≤ rows && 1 < j ≤ cols && c
-			img[i, j]
-		else
-			#white(img[1, 1])
-			black(img[1,1])
-		end
-		
-	end
-	
-	
-	# function getpixel(img,x::Float64,y::Float64)
-	# 	i,j = transform_xy_to_ij(img,x,y)
-	# 	getpixel(img,i,j)
-	# end
-	
-	function transform_ij_to_xy(i::Int,j::Int,pixels)
-	
-	   ij_to_xy =  scale(2/pixels) ∘ flipy ∘ swap ∘ translate(-pixels/2,-pixels/2)
-	   ij_to_xy([i,j])
-	end
-
-	    
-end
-
-# ╔═╡ bf1954d6-7e9a-11eb-216d-010bd761e470
-transform_ij_to_xy(1,1,400)
 
 # ╔═╡ c1efc54a-7e9b-11eb-1e76-dbd0a66184a9
 translate(-400,400)([1,1])
@@ -956,13 +867,6 @@ img_sources = [
 	"https://www.eaieducation.com/images/products/506618_L.jpg"=>"Graph Paper"
 ]
 
-# ╔═╡ 55898e88-36a0-4f49-897f-e0850bd2b0df
-img = if show_grid
-	with_gridlines(img_original;n=ngrid)
-else
-	img_original
-end;
-
 # ╔═╡ b754bae2-762f-11eb-1c6a-01251495a9bb
 begin
 	white(c::RGB) = RGB(1,1,1)
@@ -970,6 +874,88 @@ begin
 	black(c::RGB) = RGB(0,0,0)
 	black(c::RGBA) = RGBA(0,0,0,0.75)
 end
+
+# ╔═╡ 7d0096ad-d89a-4ade-9679-6ee95f7d2044
+begin
+	function transform_xy_to_ij(img::AbstractMatrix, x::Float64, y::Float64)
+	# convert coordinate system xy to ij 
+	# center image, and use "white" when out of the boundary
+		
+		rows, cols = size(img)
+		m = max(cols, rows)	
+		
+	    # function to take xy to ij
+		xy_to_ij =  translate(rows/2, cols/2) ∘ swap ∘ flipy ∘ scale(m/2)
+		
+		# apply the function and "snap to grid"
+		i,j = floor.(Int, xy_to_ij((x, y))) 
+	
+	end
+	
+	function getpixel(img,i::Int,j::Int; circular::Bool=false, r::Real=200)   
+		#  grab image color or place default
+		rows,cols = size(img)
+		m = max(cols,rows)
+		if circular
+			c = (i-rows/2)^2 + (j-cols/2)^2 ≤ r*m^2/4
+		else
+			c = true
+		end
+		
+		if 1 < i ≤ rows && 1 < j ≤ cols && c
+			img[i, j]
+		else
+			#white(img[1, 1])
+			black(img[1,1])
+		end
+		
+	end
+	
+	
+	# function getpixel(img,x::Float64,y::Float64)
+	# 	i,j = transform_xy_to_ij(img,x,y)
+	# 	getpixel(img,i,j)
+	# end
+	
+	function transform_ij_to_xy(i::Int,j::Int,pixels)
+	
+	   ij_to_xy =  scale(2/pixels) ∘ flipy ∘ swap ∘ translate(-pixels/2,-pixels/2)
+	   ij_to_xy([i,j])
+	end
+
+	    
+end
+
+# ╔═╡ da73d9f6-7a8d-11eb-2e6f-1b819bbb0185
+begin
+		[			    
+			begin
+			 x,y = transform_ij_to_xy(i,j, test_pixels)
+			 X,Y =  T₁([x,y])
+			 i,j = transform_xy_to_ij(test_img,X,Y)
+			 getpixel(test_img,i,j)
+			end	 
+		
+			for i = 1:test_pixels, j = 1:test_pixels
+		]	
+end
+
+# ╔═╡ 30f522a0-7a8e-11eb-2181-8313760778ef
+begin
+		[			    
+			begin
+			 x,y = transform_ij_to_xy(i,j, test_pixels)
+			 X,Y =  T₂([x,y])
+			 i,j = transform_xy_to_ij(test_img,X,Y)
+			 getpixel(test_img,i,j)
+			end	 
+		
+			for i = 1:test_pixels, j = 1:test_pixels
+		]	
+end
+
+# ╔═╡ bf1954d6-7e9a-11eb-216d-010bd761e470
+transform_ij_to_xy(1,1,400)
 
 # ╔═╡ 83d45d42-7406-11eb-2a9c-e75efe62b12c
 function with_gridlines(img::Array{<:Any,2}; n = 10)
@@ -994,10 +980,42 @@ function with_gridlines(img::Array{<:Any,2}; n = 10)
 	return result
 end
 
-# ╔═╡ 2e8c4a48-d535-44ac-a1f1-4cb26c4aece6
-filter!(LOAD_PATH) do path
-	path != "@v#.#"
+# ╔═╡ 55898e88-36a0-4f49-897f-e0850bd2b0df
+img = if show_grid
+	with_gridlines(img_original;n=ngrid)
+else
+	img_original
 end;
+
+# ╔═╡ ca28189e-7e9a-11eb-21d6-bd819f3e0d3a
+begin
+		[			    
+			begin
+			
+			 x,y = transform_ij_to_xy(i,j, pixels)
+			
+			X,Y = ( translate(-panx,-pany)  )([x,y])
+			 X,Y = ( T⁻¹∘scale(1/z)∘translate(-panx,-pany) )([x,y])
+			 i,j = transform_xy_to_ij(img,X,Y)
+			 getpixel(img,i,j; circular=circular, r=r)
+			end	 
+		
+			for i = 1:pixels, j = 1:pixels
+		]	
+end
+
+# ╔═╡ ccea7244-7f2f-11eb-1b7b-b9b8473a8c74
+transform_xy_to_ij(img,0.0,0.0)
+
+
+# ╔═╡ c2e0e032-7c4c-11eb-2b2a-27fe69c42a01
+img;
+
+# ╔═╡ c662e3d8-7c4c-11eb-0dcf-f9da2bd14baf
+size(img)
+
+# ╔═╡ d0e9a1e8-7c4c-11eb-056c-aff283c49c31
+img[50,56]
 
 # ╔═╡ Cell order:
 # ╟─972b2230-7634-11eb-028d-df7fc722ec70
@@ -1011,13 +1029,14 @@ end;
 # ╟─06beabc3-2aa7-4e78-9bae-dc4b37251aa2
 # ╟─26dd0e98-7a75-11eb-2196-5d7bda201b19
 # ╟─e0b657ce-7a03-11eb-1f9d-f32168cb5394
-# ╟─005ca75a-7622-11eb-2ba4-9f450e71df1f
 # ╟─23ade8ee-7a09-11eb-0e40-296c6b831d74
+# ╟─a0a9db4e-32ff-4b22-b687-b9de94d3af9e
+# ╟─005ca75a-7622-11eb-2ba4-9f450e71df1f
+# ╠═fe6e292f-ef98-4ca4-9469-4a62cc73bfb0
 # ╠═58a30e54-7a08-11eb-1c57-dfef0000255f
 # ╟─2efaa336-7630-11eb-0c17-a7d4a0141dac
 # ╟─7f28ac40-7914-11eb-1403-b7bec34aeb94
 # ╟─ce55beee-7643-11eb-04bc-b517703facff
-# ╠═b76a5bd6-802f-11eb-0951-1f1092dee8de
 # ╟─5d33f6ea-7e9c-11eb-2fb3-dbb7cb07c60c
 # ╟─45dccdec-7912-11eb-01b4-a97e30344f39
 # ╟─d2fb356e-7f32-11eb-177d-4f47d6c9e59b
@@ -1033,9 +1052,12 @@ end;
 # ╟─d9115c1a-7aa0-11eb-38e4-d977c5a6b75b
 # ╟─e965cf5e-79fd-11eb-201d-695b54d08e54
 # ╟─1e11c1ec-79fe-11eb-1867-9da72b3f3bc4
+# ╠═06b9fc29-aca8-442f-937a-88d26cd49a1b
+# ╠═b30e6893-4b4f-49bc-8a84-77620426067b
 # ╟─28ef451c-7aa1-11eb-340c-ab3a1193a3c4
 # ╟─a0afe3ae-76b9-11eb-2301-cde7260ddd7f
 # ╟─fc2deb7c-7aa1-11eb-019f-d3e3c80b9ff1
+# ╠═b43fbc6c-7aa9-4834-82ce-5d7ff9d088f7
 # ╠═d364f91a-76b9-11eb-1807-75e733940d53
 # ╟─080d87e0-7aa2-11eb-18f5-2fb6a7a5bcb4
 # ╠═15283aba-7aa2-11eb-389c-e9f215bd03e2
