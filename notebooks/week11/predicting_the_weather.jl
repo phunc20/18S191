@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.0
+# v0.14.5
 
 using Markdown
 using InteractiveUtils
@@ -11,6 +11,23 @@ macro bind(def, element)
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
         el
     end
+end
+
+# ╔═╡ 88b46d2e-220e-11eb-0f7f-b3f523f0214e
+begin
+    import Pkg
+    Pkg.activate(mktempdir())
+	
+    Pkg.add([
+        Pkg.PackageSpec(name="Plots", version="1"),
+        Pkg.PackageSpec(name="PlutoUI", version="0.7"),
+        Pkg.PackageSpec(name="LaTeXStrings", version="1"),
+        Pkg.PackageSpec(name="Roots", version="1"),
+		Pkg.PackageSpec(name="DifferentialEquations", version="6"),
+    ])
+	
+    using Plots, PlutoUI, LaTeXStrings, Roots, DifferentialEquations
+	using LinearAlgebra
 end
 
 # ╔═╡ 1f65fc80-a83b-11eb-2583-89bff1ea8372
@@ -63,23 +80,6 @@ body {
 overflow-x: hidden;
 }
 </style>"""
-
-# ╔═╡ 88b46d2e-220e-11eb-0f7f-b3f523f0214e
-begin
-    import Pkg
-    Pkg.activate(mktempdir())
-	
-    Pkg.add([
-        Pkg.PackageSpec(name="Plots", version="1"),
-        Pkg.PackageSpec(name="PlutoUI", version="0.7"),
-        Pkg.PackageSpec(name="LaTeXStrings", version="1"),
-        Pkg.PackageSpec(name="Roots", version="1"),
-		Pkg.PackageSpec(name="DifferentialEquations", version="6"),
-    ])
-	
-    using Plots, PlutoUI, LaTeXStrings, Roots, DifferentialEquations
-	using LinearAlgebra
-end
 
 # ╔═╡ f9dbf2e8-574d-4846-af48-f7e5a82a1afc
 TableOfContents(aside=true)
@@ -206,9 +206,6 @@ md"""
 Let's simulate this with the Euler method and plot the trajectory $x(t)$ as a function of time $t$:
 """
 
-# ╔═╡ 6e90ea26-220e-11eb-0c65-bf52b3d2e195
-results = euler(logistic, 0.5, 0.01, 20.0)
-
 # ╔═╡ 2d1c6abf-3b15-4638-88c5-89b5d0585c98
 md"""
 Normally we would *not* choose the Euler method to calculate actual trajectories, but it is enough for our purposes of understanding the *qualitative* behaviour of the equations.
@@ -220,13 +217,6 @@ We see that for this particular initial condition, the solution seems to settle 
 
 Such a value is called a **fixed point**, a **stationary point**, or a **steady state** of the ODE.
 """
-
-# ╔═╡ 96e22792-220e-11eb-2729-63964507b5f2
-begin
-	plot(results.ts, results.xs, size=(400, 300), leg=false, xlabel=L"t", ylabel=L"x(t)", lw=3)
-	scatter!([(results.ts[1], results.xs[1])])
-	ylims!(0.4, 1.1)
-end
 
 # ╔═╡ 90ccb392-2216-11eb-1fd8-83b7d7c16b54
 md"""
@@ -243,6 +233,8 @@ gr(fmt=:png, dpi=300, size=(400, 300))
 # ╔═╡ bef9c2e4-220e-11eb-24d8-bd618d2985ea
 md"""
  Let's see what happens for other initial conditions:
+
+**(?)** Why it breaks when `x₀` equals `3`?
 """
 
 # ╔═╡ 17317eb8-22d5-11eb-0f46-2bf1bddd36bb
@@ -250,54 +242,16 @@ md"""
 x₀ = $(@bind x0 Slider(-0.9:0.001:3.0, default=0.5, show_value=true))
 """
 
-# ╔═╡ 2300b29a-22d5-11eb-3c99-bdec0e5a2685
-let
-	p = plot(xlabel=L"t", ylabel=L"x(t)",  leg=false, ylim=(-1, 2))
-
-	results = euler(logistic, x0, 0.01, 5.0)	
-		
-	plot!(results.ts, results.xs, alpha=1, lw=3)
-	scatter!([0.0], [x0])
-	
-	hline!([0.0], ls=:dash)
-	# as_svg(p)
-end
-	
-
 # ╔═╡ ae862e10-22d5-11eb-3d75-1d748cf86944
 md"""
 To get an overview of the behaviour we can draw all the results on a single graph:
 """
 
-# ╔═╡ c5bf15b1-a540-478b-acec-1aa47aad13d1
-let
-	p = plot(xlabel=L"t", ylabel=L"x(t)", leg=false, ylim=(-1, 2))
-
-	# for x0 in -0.5:0.05:2.0
-#for x0 in 0.0:0.1:2.0
-	for x0 in -0.5:0.1:2.0
-	results = euler(logistic, x0, 0.05, 5.0)	
-	
-# 	for x0 in -0.5:0.05:2.0
-# 		results = euler(logistic, x0, 0.01, 10.0)	
-		
-		plot!(p, results.ts, results.xs, alpha=0.8, lw=1, arrow=true)
-	end
-
-	
-	md"""
-	#### Trajectories for $ẋ = x(1-x)$ 
-	
-	$p
-
-	"""
-end
-
 # ╔═╡ 446c564e-220f-11eb-191a-6b419e790f3f
 md"""
 We see that all the curves starting near to $x_0=1.0$ seem to converge to 1 at long times. If the system starts *exactly* at 0 then it stays there forever. However, if it starts close to 0, on either side, then it moves *away* from 0 (on that same side of 0) -- starting from a negative value $x$ becomes ever more negative. (Even though negative populations have no meaning in the original interpretation as the dynamics of a population, we can still ask study the dynamics of the equation with negative initial conditions, since it may model other systems too.)
 
-The special values $x^*_1=1$ and $x^*_2=0$ are called **stationary points** or **fixed points** of the differential equation. If we start at $x^*_i$, then the derivative there is $f'(x^*_i) = 0$, and hence we cannot move away from $x^*_i$! The fixed points can be found as zeros or **roots** of the function $f$, i.e. values $x^*$ such that $f(x^*) = 0$.
+The special values $x^*_1=1$ and $x^*_2=0$ are called **stationary points** or **fixed points** of the differential equation. If we start at $x^*_i$, then the derivative there is $f(x^*_i) = 0$, and hence we cannot move away from $x^*_i$! The fixed points can be found as zeros or **roots** of the function $f$, i.e. values $x^*$ such that $f(x^*) = 0$.
 """
 
 # ╔═╡ 38894c32-2210-11eb-26ff-d9796edd7871
@@ -323,13 +277,21 @@ Instead of drawing trajectories $x(t)$ as a function of time $t$, as we did abov
 At each possible value of $x$, the ODE gives us information about the rate of change of $x(t)$ at that point. Let's draw an **arrow** at that point, pointing in the direction that a particle placed at that point would move: to the right if $\dot{x} > 0$ and to the left if $\dot{x} < 0$.
 """
 
-# ╔═╡ 9a833edc-2217-11eb-0701-99862b410bfa
-vector_field(logistic)
-
 # ╔═╡ 42c28b16-2218-11eb-304a-e534353fa12b
 md"""
 This vector field indeed gives us a *qualitative* picture of the dynamics. It does not tell us how fast the dynamics will occur in each region, but it indicates what the *tendency* is. We have coded the fixed points according to their stability; this may be calculated using the derivative evaluated at the fixed point, $f'(x^*)$, since this derivative controls the behaviour of nearby initial conditions $x^* + \delta x$.
 The unstable fixed point is shown as a green square, and the stable fixed point as a grey circle; we will use this convention throughout the notebook.
+"""
+
+# ╔═╡ e9679609-af2c-4f15-b779-cf228147bf10
+md"""
+**(?)** What does it mean by calculating the stability by $f'(x^*)$?
+
+"""
+
+# ╔═╡ 0a3e0245-c6be-4966-bde3-cbc9967c3637
+md"""
+### Stopped here (2021/05/18 15h53)
 """
 
 # ╔═╡ e6ed3366-2246-11eb-3a86-f375162c746d
@@ -357,18 +319,10 @@ md"""
 μ = $(@bind λ Slider(-1.0:0.05:1, show_value=true))
 """
 
-# ╔═╡ 25578fa6-2248-11eb-2838-57fbfb928fc4
-begin
-	vector_field(x -> g(λ, x))
-end
-
 # ╔═╡ 49ec803a-22d7-11eb-3f04-db8f8c119a7d
 md"""
 Now let's collect all the vector fields into a single plot. The horizontal axis now represents the different possible values of the parameter $\mu$:
 """
-
-# ╔═╡ b9ee4db4-22d7-11eb-38ef-511e30df16cc
-bifurcation_diagram(g)
 
 # ╔═╡ 27190ac0-230b-11eb-3367-af2bbbf57e5e
 md"""
@@ -395,9 +349,6 @@ md"""
 Let's plot the bifurcation diagram again:
 """
 
-# ╔═╡ f040d1c4-2247-11eb-0bf0-090e90a86a85
-bifurcation_diagram(h)
-
 # ╔═╡ a56ad0bc-22d7-11eb-0418-d36f3ef14109
 md"""
 We see that there is a range of values of $\mu$ for which there are *three coexisting fixed points*, two stable and one unstable. Since there are two stable fixed points in which the system can remain, we say that the system is **bistable**.
@@ -407,9 +358,6 @@ We see that there is a range of values of $\mu$ for which there are *three coexi
 md"""
 Now that we understand what the plots mean and the dynamics, let's plot just the fixed points $x^*(\mu)$ as a function of $\mu$. Such a plot is called a **bifurcation diagram**:
 """
-
-# ╔═╡ 0c3c88fe-2249-11eb-03af-bf9c393fadd4
-fixed_points(h)
 
 # ╔═╡ aa81663c-230b-11eb-3c0e-39759f36deb6
 md"""
@@ -487,6 +435,13 @@ function brusselator(xx, p, t)
 			b * x - x^2 * y]
 end
 
+# ╔═╡ 77e5ff47-1e95-4552-a3d2-2fdf7bbea7cb
+md"""
+a = $(@bind a Slider(0.0:0.1:5.0, show_value=true, default=1.0))
+
+b = $(@bind b Slider(0.0:0.1:5.0, show_value=true, default=1.5))
+"""
+
 # ╔═╡ e2953d11-6880-45cb-8000-3f6903a85c7d
 begin
 	u0 = [1, 1]
@@ -499,13 +454,6 @@ begin
 	prob = ODEProblem(brusselator, u0, tspan, params)
 	soln = solve(prob)
 end;
-
-# ╔═╡ 77e5ff47-1e95-4552-a3d2-2fdf7bbea7cb
-md"""
-a = $(@bind a Slider(0.0:0.1:5.0, show_value=true, default=1.0))
-
-b = $(@bind b Slider(0.0:0.1:5.0, show_value=true, default=1.5))
-"""
 
 # ╔═╡ 92aca04d-376f-4ac7-b4c3-5b0652974157
 gr(dpi=300)
@@ -567,6 +515,9 @@ md"""
 We see that there is a critical value of $b$ above which the fixed point becomes unstable and gives rise to an attracting periodic orbit. This is a [**Hopf bifurcation**](https://en.wikipedia.org/wiki/Hopf_bifurcation).
 """
 
+# ╔═╡ ea659805-3b2d-477e-b702-c6272e920a80
+plot(soln)
+
 # ╔═╡ e01fa79b-e92b-4b77-8234-108839ed2598
 md"""
 # 3D: Chaos in the Lorenz equations
@@ -610,20 +561,20 @@ function lorenz(u, p, t)
 	return [dx, dy, dz]
 end 
 
+# ╔═╡ e068c809-34c6-4723-8ad5-a55918cfed87
+md"""
+ρ = $(@bind ρ Slider(0.0:0.1:100.0, show_value=true, default=10.0))
+"""
+
+# ╔═╡ 58dbd153-09e2-4a38-94c1-9f69acf515ae
+lorenz_params = (σ = 10.0, ρ = ρ, β = 8/3)
+
 # ╔═╡ 2e61c129-7fd8-46b6-8480-40f0244aab47
 begin
 	lorenz_prob = ODEProblem(lorenz, [0.01, 0.01, 0.01], (0.0, 100.0), lorenz_params)
 	
 	lorenz_soln = solve(lorenz_prob)
 end;
-
-# ╔═╡ 58dbd153-09e2-4a38-94c1-9f69acf515ae
-lorenz_params = (σ = 10.0, ρ = ρ, β = 8/3)
-
-# ╔═╡ e068c809-34c6-4723-8ad5-a55918cfed87
-md"""
-ρ = $(@bind ρ Slider(0.0:0.1:100.0, show_value=true, default=10.0))
-"""
 
 # ╔═╡ 5ffeba9b-8487-4be1-bb64-8d2330824ee5
 plot(lorenz_soln, vars=(1, 2, 3), xlabel="x", ylabel="y", zlabel="z", xlims=(-25, 25), ylims=(-25, 25), zlims=(0, 60))
@@ -746,6 +697,54 @@ function euler(f, x0, h, t_final)
 	return (ts=ts, xs=xs)  # a named tuple
 end
 
+# ╔═╡ 6e90ea26-220e-11eb-0c65-bf52b3d2e195
+results = euler(logistic, 0.5, 0.01, 20.0)
+
+# ╔═╡ 96e22792-220e-11eb-2729-63964507b5f2
+begin
+	plot(results.ts, results.xs, size=(400, 300), leg=false, xlabel=L"t", ylabel=L"x(t)", lw=3)
+	scatter!([(results.ts[1], results.xs[1])])
+	ylims!(0.4, 1.1)
+end
+
+# ╔═╡ 2300b29a-22d5-11eb-3c99-bdec0e5a2685
+let
+	p = plot(xlabel=L"t", ylabel=L"x(t)",  leg=false, ylim=(-1, 3.5))
+
+	results = euler(logistic, x0, 0.01, 20.0)	
+		
+	plot!(results.ts, results.xs, alpha=1, lw=3)
+	scatter!([0.0], [x0])
+	
+	hline!([0.0], ls=:dash)
+	# as_svg(p)
+end
+	
+
+# ╔═╡ c5bf15b1-a540-478b-acec-1aa47aad13d1
+let
+	p = plot(xlabel=L"t", ylabel=L"x(t)", leg=false, ylim=(-1, 2))
+
+	# for x0 in -0.5:0.05:2.0
+#for x0 in 0.0:0.1:2.0
+	for x0 in -0.5:0.1:2.0
+	    results = euler(logistic, x0, 0.05, 5.0)	
+	
+# 	for x0 in -0.5:0.05:2.0
+# 		results = euler(logistic, x0, 0.01, 10.0)	
+		
+		plot!(p, results.ts, results.xs, alpha=0.8, lw=1, arrow=true)
+	end
+
+	
+	md"""
+	#### Trajectories for $ẋ = x(1-x)$ 
+	
+	$p
+
+	"""
+end
+
 # ╔═╡ 546168ce-2218-11eb-198b-1da9f8a9a242
 derivative(f, x, h=0.001) = ( f(x + h) - f(x - h) ) / (2h)
 
@@ -832,6 +831,14 @@ function vector_field(f)
 	vector_field!(p, 0, f)
 end
 
+# ╔═╡ 9a833edc-2217-11eb-0701-99862b410bfa
+vector_field(logistic)
+
+# ╔═╡ 25578fa6-2248-11eb-2838-57fbfb928fc4
+begin
+	vector_field(x -> g(λ, x))
+end
+
 # ╔═╡ e55d2780-2247-11eb-01e0-fbdc94bba264
 function bifurcation_diagram(h)
 	p = plot(leg=false, ratio=1)
@@ -845,6 +852,12 @@ function bifurcation_diagram(h)
 	
 	return p
 end
+
+# ╔═╡ b9ee4db4-22d7-11eb-38ef-511e30df16cc
+bifurcation_diagram(g)
+
+# ╔═╡ f040d1c4-2247-11eb-0bf0-090e90a86a85
+bifurcation_diagram(h)
 
 # ╔═╡ e27dace4-2248-11eb-2ae1-953639d8c944
 function fixed_points(f)
@@ -873,6 +886,9 @@ function fixed_points(f)
 	return p
 end
 
+# ╔═╡ 0c3c88fe-2249-11eb-03af-bf9c393fadd4
+fixed_points(h)
+
 # ╔═╡ Cell order:
 # ╟─1f65fc80-a83b-11eb-2583-89bff1ea8372
 # ╠═88b46d2e-220e-11eb-0f7f-b3f523f0214e
@@ -896,12 +912,12 @@ end
 # ╠═6e90ea26-220e-11eb-0c65-bf52b3d2e195
 # ╟─2d1c6abf-3b15-4638-88c5-89b5d0585c98
 # ╟─f055be76-22d4-11eb-268a-bf70c7d8f1a1
-# ╟─96e22792-220e-11eb-2729-63964507b5f2
+# ╠═96e22792-220e-11eb-2729-63964507b5f2
 # ╟─90ccb392-2216-11eb-1fd8-83b7d7c16b54
 # ╠═0bf302de-4a0f-4341-b010-d3606e237acc
 # ╟─bef9c2e4-220e-11eb-24d8-bd618d2985ea
 # ╟─17317eb8-22d5-11eb-0f46-2bf1bddd36bb
-# ╟─2300b29a-22d5-11eb-3c99-bdec0e5a2685
+# ╠═2300b29a-22d5-11eb-3c99-bdec0e5a2685
 # ╟─ae862e10-22d5-11eb-3d75-1d748cf86944
 # ╟─c5bf15b1-a540-478b-acec-1aa47aad13d1
 # ╟─446c564e-220f-11eb-191a-6b419e790f3f
@@ -910,6 +926,8 @@ end
 # ╟─c15a53e8-2216-11eb-1460-8510aea0f570
 # ╠═9a833edc-2217-11eb-0701-99862b410bfa
 # ╟─42c28b16-2218-11eb-304a-e534353fa12b
+# ╟─e9679609-af2c-4f15-b779-cf228147bf10
+# ╟─0a3e0245-c6be-4966-bde3-cbc9967c3637
 # ╟─e6ed3366-2246-11eb-3a86-f375162c746d
 # ╟─ec3c5d9c-2246-11eb-1ec5-e3d9c8a7fa23
 # ╠═3fa21738-2247-11eb-09d5-4dcf0e7377fc
@@ -942,6 +960,7 @@ end
 # ╠═92aca04d-376f-4ac7-b4c3-5b0652974157
 # ╠═34556546-0cab-43e2-bc2c-f7487288392c
 # ╟─c90e3885-33bd-40d2-8a64-946fd7676656
+# ╠═ea659805-3b2d-477e-b702-c6272e920a80
 # ╟─e01fa79b-e92b-4b77-8234-108839ed2598
 # ╟─1d91975b-2644-41da-a2a4-667ae6ed5ca1
 # ╟─d99002e1-02ca-45bd-ba26-581f7f1b4fe8
